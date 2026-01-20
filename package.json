@@ -1,20 +1,20 @@
 {
-  "name": "esp-projecttemplate",
-  "version": "1.0.0",
-  "description": "ESP Template for smart devices",
+  "name": "smart-humtemp",
+  "version": "0.0.1",
+  "description": "Smart Humidity and Temperature Monitor",
   "main": "index.js",
   "type": "module",
   "directories": {
     "lib": "lib",
     "test": "test"
   },
-  "homepage": "https://github.com/lsc-labs/ESP-ProjectTemplate#readme",
+  "homepage": "https://github.com/lsc-labs/Smart-HumTemp#readme",
   "bugs": {
-    "url": "https://github.com/lsc-labs/ESP-ProjectTemplate/issues"
+    "url": "https://github.com/lsc-labs/Smart-HumTemp/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lsc-labs/ESP-ProjectTemplate.git"
+    "url": "git+https://github.com/lsc-labs/Smart-HumTemp.git"
   },
   "scripts": {
     "create-WebPages": "npm run build-Pages && npm run compile-Pages",

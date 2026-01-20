@@ -25,7 +25,10 @@
 #include <WebServer.h>
 // #include <WebRoutes.h>   - if you have custom web routes, include your WebRoutes.h here
 #include <DevelopmentHelper.h>
+#include <DHTSensor.h>
 
+// Instanziate the Sensor (Location 1, DHT22 on D4)
+CDHTSensor oDHTSensor(D4,DHT22,1); // GPIO2 , DHT22 Sensor, Location 1 
 
 CFS oFS;
 CWiFiController oWiFiController;

@@ -1,0 +1,114 @@
+
+
+<div id="SensorPage" 
+    data-menu='[
+        {"name":"Settings|SensorID","title":"Sensor", "icon":"Thermo", 
+            "attr": { "data-cfg": "sensorID" }, 
+            "payload":{"vars": { "type":"ID"}}
+        },
+    ]'>
+  
+    <legend><span data-i18n="Sensor.legend"></span>  (<span data-i18n="Sensor.$(type)"></span>)</legend>
+    <div class="pageDesc" data-i18n="Sensor.title"> </div>
+
+    <!-- Physical sensor or open weather map -->
+    <div class="row form-group" style="display:none" >
+        <label class="$(col-label-class) info-icon" data-i18n="@title:Sensor.physical.info">
+            <span data-i18n="Sensor.physical.label"></span>
+            <icon data-icon="Info"></icon>
+        </label>
+         <div class="$(col-input-class)">
+            <form>
+                <label class="radio-inline">
+                    <input type="radio" value="1" name="physical" disabled>
+                    <span data-i18n="main.yes">Y</span>
+                </label> 
+                <label class="radio-inline">
+                    <input type="radio" value="0" name="physical" checked disabled> 
+                    <span data-i18n="main.no">N</span>
+                </label>
+            </form>
+        </div>
+    </div>
+    <!-- Adjust Temperature settings-->
+    <div class="row form-group" data-auth="RO">
+        <label class="$(col-label-class) info-icon" data-i18n="@title:Sensor.adjust_t.info">
+            <span data-i18n="Sensor.adjust_t.label"></span>
+            <icon data-icon="Info"></icon>
+        </label>
+        <span class="$(col-input-class)">
+            <input  data-cfg="adjust_temp" 
+                    class="form-control input-sm" 
+                    type="number" 
+                    step="0.1"
+                    min="-20"
+                    max="30"
+                    lang={navigator.language} 
+                    value="0">
+        </span>
+    </div>
+    <!-- Adjust Humidity  settings-->
+    <div class="row form-group" data-auth="RO">
+            <label  class="$(col-label-class) info-icon" 
+                    data-i18n="@title:Sensor.adjust_h.info">
+                <span data-i18n="Sensor.adjust_h.label"></span>
+                <icon data-icon="Info"></icon>
+            </label>
+            <span class="$(col-input-class)">
+                <input  data-cfg="adjust_humidity" 
+                        class="form-control input-sm" 
+                        type="number"
+                        step="0.1"
+                        min="-20"
+                        max="30"
+                        lang={navigator.language} 
+                        value="0">
+            </span>
+        </div>
+    
+    <!-- Open Weather settings -->
+    <div data-viewon="physical=0" data-auth="RO">
+        <div class="row form-group" data-auth="RO">
+            <label  class="$(col-label-class) info-icon" 
+                    data-i18n="@title:Sensor.open.appID.info">
+                <span data-i18n="Sensor.open.appID.label"></span>
+                <icon data-icon="Info"></icon>
+            </label>
+            <span class="$(col-input-class)">
+                <input  data-cfg="web_key" 
+                        class="form-control input-sm" 
+                        type="text">
+            </span>
+        </div>
+
+        <!-- Set the longitude for  open weather -->
+        <div class="row form-group" data-auth="RO">
+            <label  class="$(col-label-class) info-icon" 
+                    data-i18n="@title:Sensor.open.lon.info">
+                <span data-i18n="Sensor.open.lon.label"></span>
+                <icon data-icon="Info"></icon>
+            </label>
+            <span class="$(col-input-class)">
+                <input  data-cfg="web_lon" 
+                        class="form-control input-sm" 
+                        type="text">
+            </span>
+        </div>
+
+         <!-- Set the latitude for  open weather -->
+        <div class="row form-group" data-auth="RO">
+            <label class="$(col-label-class) info-icon" data-i18n="@title:Sensor.open.lat.info">
+            <span data-i18n="Sensor.open.lat.label"></span>
+                <icon data-icon="Info"></icon>
+            </label>
+            <span class="$(col-input-class)">
+                <input  data-cfg="web_lat" 
+                        class="form-control input-sm" 
+                        type="text">
+            </span>
+        </div>
+
+    </div>
+
+    <div class="row form-group" data-element-type="save-btn-row"></div>
+</div>
