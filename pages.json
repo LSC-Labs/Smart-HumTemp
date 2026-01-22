@@ -26,7 +26,7 @@
         "lib/PLibESPV1/src/web/pages/Backup",
         "lib/PLibESPV1/src/web/pages/Firmware",
         "src/web/pages/Status",
-        "src/web/pages/Sensor"
+        "src/web/pages/DHTSensor"
     ],
 
     "sync" : {

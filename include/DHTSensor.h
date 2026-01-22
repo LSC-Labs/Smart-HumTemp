@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <Appl.h>
 #include <AppConfig.h>
-#include <EventHandler.h>
+#include <ModuleInterface.h>
 #include <SimpleDelay.h>
 #include <DHT.h>
 
@@ -22,9 +22,9 @@ struct DewStatus {
 };
 
 struct DewConfig {
-    bool bIsPhysicalSensor = true;
-    float adjustTempC = 0.0;        // Temperature adjustment in °C
-    float adjustHumidity = 0.0;     // Humidity adjustment
+    bool bIsPhysicalSensor  = true;
+    float adjustTempC       = 0.0;        // Temperature adjustment in °C
+    float adjustHumidity    = 0.0;     // Humidity adjustment
     /** only needed if open weather map is used **/
     // String strWeatherURL = "https://api.openweathermap.org/data/3.0/onecall";
     String strWeatherURL = "http://api.openweathermap.org/data/2.5/weather";
@@ -32,7 +32,7 @@ struct DewConfig {
     String strWeatherAppID = "<YOUR_OPENWEATHERMAP_API_KEY>";
     String strWeatherLongitude = "31.553641";
     String strWeatherLatitude  = "33.556778";
-    String strWeatherExclude;
+    String strWeatherExclude;   
     unsigned long nWeatherCallTimeout = 1000 * 60 * 2; // Call every 2 minutes to avoid the 1000 calls per day limit.
 #ifdef DEBUGINFOS
     unsigned long nSensorReadTimeout = 20000; // Read the sensor in Debug Mode to avoid message flooding   
@@ -41,7 +41,7 @@ struct DewConfig {
 #endif
 };
 
-class CDHTSensor : public IMsgEventReceiver, public IConfigHandler,public IStatusHandler { //  : IConfigHandler, IStatusHandler {
+class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
     protected:
         DewConfig Config;
         CSimpleDelay m_oSensorReadDelay;      
@@ -59,7 +59,8 @@ class CDHTSensor : public IMsgEventReceiver, public IConfigHandler,public IStatu
         CDHTSensor(int nPort, int nSensorType, int nLocation);
 
         void begin(int nPort, int nSensorType, int nLocation);
-        
+        void dispatch();
+
         // Interface implementations
         void writeStatusTo(JsonObject & oObj) override;
         void readConfigFrom(JsonObject & oCfg) override;
@@ -71,8 +72,8 @@ class CDHTSensor : public IMsgEventReceiver, public IConfigHandler,public IStatu
         float getDewPoint(bool bInFarenheit = false);
         float calculateDewPoint(float fTemp, float fHum, bool bInFarenheit = false);
         bool  isInternetAvailable();
+
     protected:
-       
         float adjustAndStoreTemperatures(float fRawTemp, bool bInFarenheit = false);
         float adjustAndStoreHumidity(float fRawHumi);
         void  updateFromPhysicalSensor();

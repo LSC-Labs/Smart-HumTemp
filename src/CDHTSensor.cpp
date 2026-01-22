@@ -118,15 +118,24 @@ void CDHTSensor::writeStatusTo(JsonObject & oStatus) {
 /// @return 
 int CDHTSensor::receiveEvent(const void * pSender, int nMsg, const void * pData, int nType) {
     switch(nMsg) {
+        case MSG_APPL_LOOP:         dispatch();
+                                    break;
+
         case MSG_WIFI_CONNECTED:    m_bInternetAvailable = (nType == WIFI_STATION_MODE);
             DEBUG_INFOS(" ## -> Setting Internet access to %d",isInternetAvailable());
                                     break;
+
         case MSG_WIFI_DISABLED :    m_bInternetAvailable = false;
             DEBUG_INFO(" ## -> Disabling Internet access for sensors...");
                                     break;
     }
     return(EVENT_MSG_RESULT_OK);
 }
+
+void CDHTSensor::dispatch() {
+    // Currently no periodic tasks needed.
+    getDewPoint();
+}   
 
 bool CDHTSensor::isInternetAvailable() {
     return(this->m_bInternetAvailable);
