@@ -9,7 +9,7 @@
     
     "Sensor": {
         "legend": "Sensor",
-        "title" : "Justieren und konfigurieren des Taupunkt Sensors.",
+        "title" : "Justieren und konfigurieren des Sensors.",
         "ID": "Innen",
         "OD": "Außen",
         "adjust_t": {

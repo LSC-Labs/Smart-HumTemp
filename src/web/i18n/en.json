@@ -194,7 +194,8 @@
       "device": "Device",
       "network": "Network",
       "mqtt": "Message broker",
-      "dewpoint": "Dew Point switch"
+      "dewpoint": "Dew Point switch",
+      "sensor": "Sensor"
     },
     "hostname": "Systemname",
     "uptime": "Uptime",
@@ -223,7 +224,43 @@
     "sensor": {
       "OD": "Sensor (Outdoor)",
       "ID": "Sensor (Indoor)",
-      "dewpoint": "DP"
+      "dewpoint": "DP",
+      "temp": "Temperature",
+      "hum": "Humidity",
+      "dew": "Dew Point"
+    }
+  },
+  "Sensor": {
+    "legend": "Sensor",
+    "title": "Set and adjust the sensor.",
+    "ID": "Indoor",
+    "OD": "Outdoor",
+    "adjust_t": {
+      "label": "Adjust temp",
+      "info": "Adjust the temperature"
+    },
+    "adjust_h": {
+      "label": "Adjust humidity",
+      "info": "Adjust the humidity"
+    },
+    "physical": {
+      "label": "Physical Sensor",
+      "info": "Select the sensor is physical, or you use open weather map instead."
+    },
+    "open": {
+      "name": "Open weather map",
+      "appID": {
+        "label": "App ID",
+        "info": "An open weather app id is needed, register and enter here..."
+      },
+      "lon": {
+        "label": "Longitude",
+        "info": "Longitude of your location."
+      },
+      "lat": {
+        "label": "Latitude",
+        "info": "Latitude of your location"
+      }
     }
   }
 }

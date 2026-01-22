@@ -5,7 +5,7 @@
             "device"    : "Device",
             "network"   : "Network",
             "mqtt"      : "Message broker",
-            "dewpoint"  : "Dew Point switch" 
+            "sensor"    : "Sensor" 
 
         },
         "hostname"  : "Systemname",
@@ -34,9 +34,9 @@
             "active": "Fan active"
         },
         "sensor": {
-            "OD": "Sensor (Outdoor)",
-            "ID": "Sensor (Indoor)",
-            "dewpoint": "DP"
+            "temp": "Temperature",
+            "hum": "Humidity",
+            "dew": "Dew Point"
         }
 
     }

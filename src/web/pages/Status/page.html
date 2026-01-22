@@ -64,40 +64,26 @@
             <div class="panel panel-default table-responsive">
                 <table class="table table-hover table-striped table-condensed">
                     <!-- Dew Point -->
-                    <caption data-i18n="Status.panel.dewpoint"></caption>
-                    <tr>
-                        <!-- fan active -->
-                        <th data-i18n="Status.fan.active"></th>
-                        <td>
-                            <input id="fan_active" type="text" data-cfg="fan_active" style="display:none"></input>
-                            <span data-viewon="fan_active=true">
-                                <icon data-icon="ToggleOnSwitch"></icon> 
-                            </span>
-                            <span data-viewon="fan_active=false">
-                                <icon data-icon="ToggleOffSwitch"></icon> 
-                            </span>
-                        </td>
-                    </tr>
+                    <caption data-i18n="Status.panel.sensor"></caption>
                     <tr>
                         <!-- sensor Indoor -->
-                        <th data-i18n="Status.sensor.ID"></th>
+                        <th data-i18n="Status.sensor.temp"></th>
                         <td>
-                            <span data-cfg="sensorID_temp_c"></span>°C / 
-                            <span data-cfg="sensorID_hum"></span>%
-                            => (<span data-i18n="Status.sensor.dewpoint"></span>:
-                            <span data-cfg="sensorID_dew_point"></span>°C)
+                            <span data-cfg="sensor_temp_c"></span>°C
                         </td>
                     </tr>
                     <tr>
-                        <!-- sensor Outdoor -->
-                        <th data-i18n="Status.sensor.OD"></th>
+                        <th data-i18n="Status.sensor.hum"></th>
                         <td>
-                            <span data-cfg="sensorOD_temp_c"></span>°C / 
-                            <span data-cfg="sensorOD_hum"></span>%
-                            => (<span data-i18n="Status.sensor.dewpoint"></span>:
-                            <span data-cfg="sensorOD_dew_point"></span>°C)
+                            <span data-cfg="sensor_hum"></span>%
                         </td>
                     </tr>
+                    <tr>
+                        <th data-i18n="Status.sensor.dew"></th>
+                        <td>
+                            <span data-cfg="sensor_dew_point"></span>°C
+                        </td>
+                    </tr> 
                 </table>
             </div>
 
