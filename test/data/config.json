@@ -23,7 +23,7 @@
         "min_outdoor": -10.3,
         "min_indoor": 10.1
     },
-    "sensorID": {
+    "sensor": {
         "adjust_humidity": 5,
         "adjust_temp": -0.2,
         "physical": true,
