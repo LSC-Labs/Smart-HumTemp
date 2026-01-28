@@ -7,7 +7,7 @@
 #include <SimpleDelay.h>
 #include <DHT.h>
 
-struct DewStatus {
+struct DHTStatus {
     float TempRawC      = NAN;
     float TempRawF      = NAN;
     float HumidityRaw   = NAN;
@@ -21,7 +21,7 @@ struct DewStatus {
 
 };
 
-struct DewConfig {
+struct DHTConfig {
     bool bIsPhysicalSensor  = true;
     float adjustTempC       = 0.0;        // Temperature adjustment in °C
     float adjustHumidity    = 0.0;     // Humidity adjustment
@@ -43,7 +43,7 @@ struct DewConfig {
 
 class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
     protected:
-        DewConfig Config;
+        DHTConfig Config;
         CSimpleDelay m_oSensorReadDelay;      
         CSimpleDelay m_oUpdateDelay; // Update delay overall...
         DHT *pSensor = nullptr; 
@@ -51,7 +51,7 @@ class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
         JsonDocument OpenWeatherData;
 
     public:
-        DewStatus Status;
+        DHTStatus Status;
 
     public: 
         CDHTSensor();
