@@ -52,10 +52,9 @@ bool CCaptivePortal::startPortal() {
         DEBUG_INFO("Captive Portal: Starting DNS Server");
         // If no redirect IP specified, use the SoftAP IP
         if(m_oRedirectIP == (uint32_t)0) {
-            DEBUG_INFO("Captive Portal: No redirect IP specified, using SoftAP IP");
-            struct ip_info oIPInfo;
-            wifi_get_ip_info(SOFTAP_IF, &oIPInfo);
-            m_oRedirectIP = IPAddress(oIPInfo.ip.addr);
+            m_oRedirectIP = m_oStatus.WiFiModeIsAP ?  WiFi.softAPIP() : WiFi.localIP();
+            // m_oRedirectIP = IPAddress(192,168,4,1); //  WiFi.localIP();
+            DEBUG_INFOS("Captive Portal: No redirect IP specified, using own IP %s",m_oRedirectIP.toString().c_str() );
         }   
         if(m_pDNSServer == nullptr) {
             m_pDNSServer = new DNSServer();
@@ -91,6 +90,7 @@ int CCaptivePortal::receiveEvent(const void * pSender, int nMsg, const void * pM
                     (nClass == WIFI_ACCESS_POINT_MODE && m_oConfig.OnAccessPointMode)  ||
                     (nClass == WIFI_STATION_MODE      && m_oConfig.OnStationMode ) 
                 ) {
+                    m_oStatus.WiFiModeIsAP = (nClass == WIFI_ACCESS_POINT_MODE);
                     startPortal();
                 }
             }

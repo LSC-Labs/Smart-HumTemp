@@ -13,6 +13,7 @@ struct CaptivePortalConfig {
 
 struct CaptivePortalStatus {
     bool    Active         = false;    // Captive Portal is active
+    bool    WiFiModeIsAP   = false;    // WiFi is in Access Point Mode or Station Mode  
 }; 
 
 class CCaptivePortal : public IModule {
