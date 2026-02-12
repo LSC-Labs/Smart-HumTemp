@@ -13,30 +13,17 @@
 #include <Network.h>
 #include <ESP8266HTTPClient.h>
 #include <Msgs.h>
+#include <JsonHelper.h>
 
-#define SENSOR_CFG_IS_SENSOR        F("physical")
-#define SENSOR_CFG_ADJUST_TEMP      F("adjust_temp")
-#define SENSOR_CFG_ADJUST_HUMIDITY  F("adjust_humidity")
-#define SENSOR_CFG_OPENWEATHER_URL  F("web_url")
-#define SENSOR_CFG_OPENWEATHER_KEY  F("web_key")
-#define SENSOR_CFG_OPENWEATHER_LON  F("web_lon")
-#define SENSOR_CFG_OPENWEATHER_LAT  F("web_lat")
-#define SENSOR_STATUS_TYPE          F("type")
-#define SENSOR_STATUS_TEMPC         F("temp_c")
-#define SENSOR_STATUS_TEMPF         F("temp_f")
-#define SENSOR_STATUS_HUMIDITY      F("hum")
-#define SENSOR_STATUS_TEMPC_RAW     F("temp_c_raw")
-#define SENSOR_STATUS_TEMPF_RAW     F("temp_f_raw")
-#define SENSOR_STATUS_HUMIDITY_RAW  F("hum_raw")
-#define SENSOR_STATUS_DEWPOINT      F("dew_point")
-#define SENSOR_STATUS_LAST_UPD_MS   F("last_upd_ms")
-#define SENSOR_STATUS_INTERNET      F("internet")
-
-
-
-
-
-
+const char * SENSOR_CFG_IS_SENSOR        = "physical";
+const char * SENSOR_CFG_ADJUST_TEMP      = "adjust_temp";
+const char * SENSOR_CFG_ADJUST_HUMIDITY  = "adjust_humidity";
+const char * SENSOR_CFG_OPENWEATHER_URL  = "web_url";
+const char * SENSOR_CFG_OPENWEATHER_KEY  = "web_key";
+const char * SENSOR_CFG_OPENWEATHER_LON  = "web_lon";
+const char * SENSOR_CFG_OPENWEATHER_LAT  = "web_lat";
+const char * SENSOR_STATUS_TYPE          = "type";
+const char * SENSOR_STATUS_INTERNET      = "internet";
 
 CDHTSensor::CDHTSensor() {};
 CDHTSensor::~CDHTSensor() { if(pSensor != nullptr) free(pSensor); }
@@ -64,19 +51,21 @@ void CDHTSensor::begin(int nPin, int nSensorType, int nLocation) {
 
 void CDHTSensor::readConfigFrom(JsonObject & oCfg) {
     DEBUG_FUNC_START();
-    Serial.printf("### adjust temp read from json : %f << org value\n",Config.adjustTempC);
-    LSC::setValue(&Config.bIsPhysicalSensor,    oCfg[SENSOR_CFG_IS_SENSOR]);
-    LSC::setValue(&Config.adjustHumidity,       oCfg[SENSOR_CFG_ADJUST_HUMIDITY]);
-    LSC::setValue(&Config.adjustTempC,          oCfg[SENSOR_CFG_ADJUST_TEMP]);
-    LSC::setValue(Config.strWeatherAppID,       oCfg[SENSOR_CFG_OPENWEATHER_KEY]);
-    LSC::setValue(Config.strWeatherLongitude,   oCfg[SENSOR_CFG_OPENWEATHER_LON]);
-    LSC::setValue(Config.strWeatherLatitude,    oCfg[SENSOR_CFG_OPENWEATHER_LAT]);
-    DEBUG_INFOS(" ## -> Configured as %s sensor", Config.bIsPhysicalSensor ? "physical" : "open weather");
+    DEBUG_INFOS("--- sensor adjust temp value : %f",Config.adjustTempC);
+    DEBUG_JSON_OBJ(oCfg);
+    
+    LSC::setJsonValue(oCfg,SENSOR_CFG_IS_SENSOR,        &   Config.bIsPhysicalSensor);
+    LSC::setJsonValue(oCfg,SENSOR_CFG_ADJUST_HUMIDITY,  &   Config.adjustHumidity);
+    LSC::setJsonValue(oCfg,SENSOR_CFG_ADJUST_TEMP,      &   Config.adjustTempC);
+    LSC::setJsonValue(oCfg,SENSOR_CFG_OPENWEATHER_KEY,      Config.strWeatherAppID);
+    LSC::setJsonValue(oCfg,SENSOR_CFG_OPENWEATHER_LON,      Config.strWeatherLongitude);
+    LSC::setJsonValue(oCfg,SENSOR_CFG_OPENWEATHER_LAT,      Config.strWeatherLatitude);
+
     m_oSensorReadDelay.start( Config.bIsPhysicalSensor      ? 
                             Config.nSensorReadTimeout   :
                             Config.nWeatherCallTimeout  )->setExpired();
-    DEBUG_INFOS("SENSOR %d is expired == %d",Status.SensorLocation,m_oSensorReadDelay.isDone());
     #ifdef DEBUGINFOS
+        DEBUG_INFOS("--- sensor adjust temp value : %f",Config.adjustTempC);
         m_oSensorReadDelay.printDiag();
     #endif
     DEBUG_FUNC_END();
@@ -96,6 +85,11 @@ void CDHTSensor::writeConfigTo(JsonObject & oCfg, bool bHideCritical) {
 void CDHTSensor::writeStatusTo(JsonObject & oStatus) {
     DEBUG_FUNC_START();
     oStatus[SENSOR_CFG_IS_SENSOR]       = Config.bIsPhysicalSensor;
+    if(!Config.bIsPhysicalSensor) {
+        oStatus[SENSOR_STATUS_INTERNET]     = isInternetAvailable();
+    }
+    Status.writeStatusTo(oStatus);
+    /*
     oStatus[SENSOR_STATUS_TEMPC]        = Status.TempC;
     oStatus[SENSOR_STATUS_TEMPC_RAW]    = Status.TempRawC;
     oStatus[SENSOR_STATUS_TEMPF]        = Status.TempF;
@@ -104,9 +98,8 @@ void CDHTSensor::writeStatusTo(JsonObject & oStatus) {
     oStatus[SENSOR_STATUS_HUMIDITY_RAW] = Status.HumidityRaw;
     oStatus[SENSOR_STATUS_DEWPOINT]     = Status.DewPoint;
     oStatus[SENSOR_STATUS_LAST_UPD_MS]  = Status.LastWeatherCallMillis;
-    if(!Config.bIsPhysicalSensor) {
-        oStatus[SENSOR_STATUS_INTERNET]     = isInternetAvailable();
-    }
+    */
+    
     DEBUG_FUNC_END();
 }
 
