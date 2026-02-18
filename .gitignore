@@ -12,3 +12,4 @@ tmp/*
 src/web/test*
 dist/tmp
 include/web/test*
+logs/*
