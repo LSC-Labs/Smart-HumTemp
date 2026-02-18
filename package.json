@@ -1,6 +1,6 @@
 {
   "name": "smart-humtemp",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Smart Humidity and Temperature Monitor",
   "main": "index.js",
   "type": "module",
@@ -24,7 +24,7 @@
     "watch-css": "sass --watch --style expanded --source-map --embed-sources --no-error-css scss/:src/web/css/",
     "build-Pages": "gulp buildPages",
     "compile-Pages": "gulp compilePages"
-    },
+  },
   "author": "LSC Labs - P.Liebl",
   "license": "MIT",
   "devDependencies": {

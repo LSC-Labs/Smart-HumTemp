@@ -8,6 +8,15 @@
 #include <DHT.h>
 
 struct DHTStatus {
+    const char * SENSOR_STATUS_TEMPC         = "temp_c";
+    const char * SENSOR_STATUS_TEMPF         = "temp_f";
+    const char * SENSOR_STATUS_HUMIDITY      = "hum";
+    const char * SENSOR_STATUS_TEMPC_RAW     = "temp_c_raw";
+    const char * SENSOR_STATUS_TEMPF_RAW     = "temp_f_raw";
+    const char * SENSOR_STATUS_HUMIDITY_RAW  = "hum_raw";
+    const char * SENSOR_STATUS_DEWPOINT      = "dew_point";
+    const char * SENSOR_STATUS_LAST_UPD_MS   = "last_upd_ms";
+
     float TempRawC      = NAN;
     float TempRawF      = NAN;
     float HumidityRaw   = NAN;
@@ -18,6 +27,17 @@ struct DHTStatus {
     int           SensorLocation = -1;
     unsigned long LastWeatherCallMillis = 0;
     unsigned long LastSensorReadMillis  = 0;
+
+    void writeStatusTo(JsonObject & oStatus) {
+        oStatus[SENSOR_STATUS_TEMPC]        = TempC;
+        oStatus[SENSOR_STATUS_TEMPC_RAW]    = TempRawC;
+        oStatus[SENSOR_STATUS_TEMPF]        = TempF;
+        oStatus[SENSOR_STATUS_TEMPF_RAW]    = TempRawF;
+        oStatus[SENSOR_STATUS_HUMIDITY]     = Humidity;
+        oStatus[SENSOR_STATUS_HUMIDITY_RAW] = HumidityRaw;
+        oStatus[SENSOR_STATUS_DEWPOINT]     = DewPoint;
+        oStatus[SENSOR_STATUS_LAST_UPD_MS]  = LastWeatherCallMillis;
+    }
 
 };
 
@@ -42,6 +62,7 @@ struct DHTConfig {
 };
 
 class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
+
     protected:
         DHTConfig Config;
         CSimpleDelay m_oSensorReadDelay;      
