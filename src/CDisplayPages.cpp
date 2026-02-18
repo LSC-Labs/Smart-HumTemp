@@ -150,6 +150,9 @@ void CDisplayTempPageLarge::show(CDisplay *pDisplay) {
 
         if(Status.pSI ) {
             char szBuffer[80];
+            char szTempScale[10];
+            sprintf(szTempScale,"%cC",TEMPERATURE_SIGN);
+
             pDisplay->setTextSize(1,1);
             pDisplay->setCursor(0,nOffsetY);
             sprintfSensorHumidity(szBuffer,Status.pSI);
@@ -159,9 +162,15 @@ void CDisplayTempPageLarge::show(CDisplay *pDisplay) {
 
             pDisplay->setTextSize(3,3);
             pDisplay->setCursor(0,nOffsetY + 20);
-            sprintfSensorTemp(szBuffer,Status.pSI);
-            pDisplay->printCentered(szBuffer);
-            
+            sprintfDisplayNumber(szBuffer,Status.pSI->TempC,Format::Temperature);
+            int nTextMetricWidth = 0;
+            nTextMetricWidth += pDisplay->getTextWidthMetric(szBuffer,   3);
+            nTextMetricWidth += pDisplay->getTextWidthMetric(szTempScale,2);
+            pDisplay->setCenteredTextCursorStart(nTextMetricWidth);
+            pDisplay->setTextSize(3,3);
+            pDisplay->print(szBuffer);
+            pDisplay->setTextSize(2,2);
+            pDisplay->print(szTempScale);
         }
 
         pDisplay->display();
@@ -183,21 +192,27 @@ void CDisplayHumidityPageLarge::show(CDisplay *pDisplay) {
             pDisplay->setTextSize(1,1);
             pDisplay->setCursor(0,nOffsetY);
             sprintfSensorTemp(szBuffer,Status.pSI);
-            pDisplay->printf(" %s",szBuffer);
+
+            pDisplay->printf("%s",szBuffer);
             sprintfSensorDewPoint(szBuffer,Status.pSI);
             pDisplay->printRightAligned(szBuffer);
 
             pDisplay->setTextSize(3,3);
             pDisplay->setCursor(0,nOffsetY + 20);
 
-            sprintfSensorHumidity(szBuffer,Status.pSI);
+            sprintfDisplayNumber(szBuffer,Status.pSI->Humidity,Format::Humidity);
             pDisplay->printCentered(szBuffer);
-            
+            pDisplay->setTextSize(1,2);
+            pDisplay->print(" %");
         }
 
         pDisplay->display();
         this->isActive = true;
     }
-    DEBUG_FUNC_END();
-      
+    DEBUG_FUNC_END();     
+}
+
+
+void CDisplayChartPage::show(CDisplay *pDisplay) {
+    
 }

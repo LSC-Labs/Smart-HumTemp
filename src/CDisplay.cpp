@@ -12,11 +12,11 @@
 #include <JsonHelper.h>
 #include <AppControl.h>
 
-#define CFG_ALWAYS_ON       F("alwaysOn")
-#define CFG_STATIC_PAGE     F("staticPage")
-#define CFG_ROTATE          F("rotate")
-#define CFG_POWER_OFF_TIME  F("powerOff")
-#define CFG_ROTATE_TIME     F("rotateTime")
+const char * CFG_ALWAYS_ON      = "alwaysOn";
+const char * CFG_STATIC_PAGE    = "staticPage";
+const char * CFG_ROTATE         = "rotate";
+const char * CFG_POWER_OFF_TIME = "powerOff";
+const char * CFG_ROTATE_TIME    = "rotateTime";
   
 class CDisplayCursor {
     public:
@@ -38,13 +38,12 @@ class CDisplayCursor {
 };
 
 
-
 CDisplay::CDisplay() :
     DISPLAY_CONSTRUCTOR {
     // Adafruit code page error correction.
     // @see https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives
     cp437(true);
-    Appl.MsgBus.registerEventReceiver(this);
+    Appl.MsgBus.registerEventReceiver(this,__FUNCTION__);
     m_oRotateDelay.start(Config.RotateTime);
     m_oPowerOffDelay.start(Config.PowerOffTime);
     m_oPageRefreshDelay.start(Config.PageRefreshTime);
@@ -83,11 +82,11 @@ int CDisplay::receiveEvent(const void * pSender, int nMsgType, const void * pMes
 } 
 
 void CDisplay::readConfigFrom(JsonObject & oCfg) {
-    LSC::setValue(&Config.AlwaysOn,          oCfg[CFG_ALWAYS_ON]);
-    LSC::setValue(Config.StaticDisplayName,  oCfg[CFG_STATIC_PAGE]);
-    LSC::setValue(&Config.RotateDisplays,    oCfg[CFG_ROTATE]);
-    LSC::setValue(&Config.RotateTime,        oCfg[CFG_ROTATE_TIME]);
-    LSC::setValue(&Config.PowerOffTime,      oCfg[CFG_POWER_OFF_TIME]);
+    LSC::setJsonValue(oCfg,CFG_ALWAYS_ON,       &Config.AlwaysOn);
+    LSC::setJsonValue(oCfg,CFG_STATIC_PAGE,      Config.StaticDisplayName);
+    LSC::setJsonValue(oCfg,CFG_ROTATE,          &Config.RotateDisplays);
+    LSC::setJsonValue(oCfg,CFG_ROTATE_TIME,     &Config.RotateTime);
+    LSC::setJsonValue(oCfg,CFG_POWER_OFF_TIME,  &Config.PowerOffTime);
 };
 
 void CDisplay::writeConfigTo(JsonObject & oCfg, bool bHideCritical) {
@@ -104,6 +103,43 @@ void CDisplay::printAt(uint16_t nX, uint16_t nY, const char *pszString) {
         print(pszString);
     }
 }
+
+uint16_t CDisplay::getTextWidthMetric(const char * pszText, int nCharWidth) {
+    uint8_t nTextX = this->textsize_x;
+    uint8_t nTextY = this->textsize_y;
+    this->setTextSize(nCharWidth,nTextY);
+
+    int16_t nPosY = getCursorY();
+    uint16_t nTextWidth,nTextHeight;
+    int16_t nX,nY;
+    getTextBounds(pszText,0,nPosY,&nX,&nY,&nTextWidth,&nTextHeight);
+
+    // restore current text size...
+    this->setTextSize(nTextX,nTextY);
+    return(nTextWidth);
+}
+
+/**
+ * @brief depending on the textwidth, set the start cursor to the position,
+ *        where the text will be visible centered in the requested length
+ * @param nTextWidth The width of text as detected with getTextWidthMetric()
+ * @param nStart The minimum start position, or 0 (default as start of the screen)
+ * @param nEnd. Teh maximum end position, or the width of the screed (default)
+ */
+void CDisplay::setCenteredTextCursorStart(int nTextWidth, int nStart, int nEnd) {
+    int16_t nDisplayWidth = width();
+    int16_t nStartRange = nStart > -1 ? nStart : 0;
+    int16_t nEndRange = nEnd > -1 ? nEnd : nDisplayWidth;
+    int16_t nRangeWidth = nEndRange - nStartRange;
+    int16_t nOffsetX = 0;
+    // Check boundaries... either out of bounds, then use the start point, or inside...
+    if(nTextWidth >= nRangeWidth) nOffsetX = 0;
+    else nOffsetX = (nRangeWidth - nTextWidth) / 2;
+    setCursor(nStartRange + nOffsetX,getCursorY());
+}
+
+
+
 int CDisplay::setCenteredTextCursor(const char * pszText, int nStart, int nEnd) {
     if(pszText) {
         int16_t nPosY = getCursorY();

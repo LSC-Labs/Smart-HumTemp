@@ -8,24 +8,27 @@
 #define INVALID_TEMPERATURE_DATA  -9999
 
 
+
 class CDisplayChart : public IMsgEventReceiver {
+    public:
+    enum DataType {
+        TEMP,
+        HUMIDITY
+    };
     protected:
         CDataStore<int> m_oFinalTemperatureData;
         CDataStore<int> m_oPeriodTemperatureData;
-/*
-        int *m_pnTemperatureDataPoints = nullptr;
-        int m_nActTemperatureDataPoint = -1;
-        int m_nMaxTemperatureDataPoints = 0; 
-*/
+
         int m_nSensorLocationID = -1;
+        DataType m_eDataType = DataType::TEMP;
         
         unsigned int m_nMeasurementTimeRange = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-//        unsigned int m_nPeriodTimeSpan = 0;
+
+        /**
+         * Time span for a period to collect data, before storing the average
+         * to the final data table...
+         */
         CSimpleDelay m_oPeriodTimeSpan;
-//        int *m_pnPeriodTempDataPoints = nullptr;
-//        unsigned int m_nActPeriodTempDataPoint = 0;
-//        unsigned int m_nMaxPeriodTempDataPoints = 0;
- //        unsigned int m_nPeriodUpdateInterval = 1000;
 
     public:
         CDisplayChart(int nSensorID,int nDataPoints = SCREEN_WIDTH,unsigned int nUpdateInterval = 1000) {
@@ -49,42 +52,22 @@ class CDisplayChart : public IMsgEventReceiver {
         };
 
         ~CDisplayChart() {
-            /*
-            if(m_pnTemperatureDataPoints) {
-                delete[] m_pnTemperatureDataPoints;
-                m_pnTemperatureDataPoints = nullptr;
-                m_nActTemperatureDataPoint = -1;
-                m_nMaxTemperatureDataPoints = 0;
-            }
-                */
+           
         };
 
         bool hasTemperatureDataPoints() {
             return(m_oFinalTemperatureData.count() > 0);
         }
-/*
-        void addNextTemperatureDataPoint() {
-            int nNumOfPoints = 0;
-            unsigned int nTotalTemp=0;
-            if(m_pnTemperatureDataPoints && m_pnPeriodTempDataPoints) {
-                for(unsigned int i=0; i < m_nActPeriodTempDataPoint; i++) {
-                    nTotalTemp += m_pnPeriodTempDataPoints[i];
-                    nNumOfPoints++;
-                }
-                int nAvgTemp = INVALID_TEMPERATURE_DATA;
-                if(nNumOfPoints > 0) nAvgTemp = nTotalTemp / nNumOfPoints;
-                // Check overflow
-                m_nActTemperatureDataPoint++;
-                if(m_nActTemperatureDataPoint >= m_nMaxTemperatureDataPoints) {
-                    m_nActTemperatureDataPoint = 0;
-                } 
-                m_pnTemperatureDataPoints[m_nActTemperatureDataPoint] = nAvgTemp;
-                // Reset period data points
-                m_nActPeriodTempDataPoint = 0;
-            }
+
+        void collectDataType(DataType eDataType){
+            this->m_eDataType = eDataType;
+            clearData();
         }
-*/
         virtual int receiveEvent(const void * pSender, int nMsg, const void * pMessage, int nClass) override;
         virtual void onPeriodFinished();
         void dispatch();
+        void clearData() {
+            this->m_oPeriodTemperatureData.clear();
+            this->m_oFinalTemperatureData.clear();
+        }
     };

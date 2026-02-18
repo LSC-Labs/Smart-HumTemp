@@ -4,6 +4,9 @@
 #include <EventHandler.h>
 #include <DHTSensor.h>
 
+
+#define TEMPERATURE_SIGN  0xf8
+
 struct DisplayStatus {
     DHTStatus *pSI              = nullptr;     // Status sensor indoor
     DHTStatus *pSO              = nullptr;     // Status sensor outdoor
@@ -18,15 +21,36 @@ struct DisplayStatus {
 class CDisplayBasePage : public CDisplayPage, public IMsgEventReceiver {
     protected:
         DisplayStatus Status;
-        CSimpleDelay m_oWiFiRefresh;
+        CSimpleDelay m_oDisplayRefresh;
         int m_nRSSI = 0;
 
     public:
-        CDisplayBasePage(const char * pszName, PageType eType) : CDisplayPage(pszName,eType){init();};
-        CDisplayBasePage(String strName, PageType eType) : CDisplayPage(strName,eType){init();};
+        CDisplayBasePage(const char * pszName, PageType eType) : CDisplayPage(pszName,eType){init(pszName);};
+        CDisplayBasePage(String strName, PageType eType) : CDisplayPage(strName,eType){init(strName.c_str());};
         int receiveEvent(const void * pSender, int nMsgType, const void * pMessage, int nClass) override;
         int drawPageHeader(CDisplay *pDisplay);
         int drawNumberFrame(CDisplay *pDisplay);
+
+        enum Format {
+            Temperature,
+            Humidity
+        };
+
+        /**
+         * Print the number as temp or as humidity into the buffer
+         * - temp: check if +/- sign is needed
+         */
+        void sprintfDisplayNumber(char *pszBuffer, float fData, Format eFormat) {
+            switch(eFormat) {
+                case Temperature: // Display format as temperature (--.-)
+                    if(isnan(fData)) sprintf(pszBuffer," --.-");
+                    else sprintf(pszBuffer,"%2.1f",fData);
+                    break;
+                case Humidity:
+                    if(isnan(fData)) sprintf(pszBuffer,"--");
+                    else sprintf(pszBuffer,"%2.f",fData);
+            }
+        }
 
         void sprintfSensorDewPoint(char *pszBuffer,DHTStatus *pStatus) {
             if(pszBuffer) {
@@ -85,6 +109,6 @@ class CDisplayBasePage : public CDisplayPage, public IMsgEventReceiver {
             }
         }
     protected:
-        void init();
+        void init(const char * pszName);
         
 };

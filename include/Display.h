@@ -50,6 +50,10 @@ class CDisplay :public IConfigHandler, public IMsgEventReceiver, public DISPLAY_
         void writeConfigTo(JsonObject & oCfg, bool bHideCritical) override;
         int receiveEvent(const void * pSender, int nMsgType, const void * pMessage, int nClass) override;
 
+
+        uint16_t getTextWidthMetric(const char * pszText, int nCharWidth);
+        void setCenteredTextCursorStart(int nTextWidth, int nStart = -1, int nEnd = -1);
+
         int  setCenteredTextCursor(const char *pszText, int nStart = -1, int nEnd = -1);
         int  setRightAlignedTextCursor(const char *pszText, int nEnd = -1);
         int  printCentered(const char * pszText, int nStart = -1, int nEndPos = -1);

@@ -25,9 +25,9 @@ const unsigned char ICON_WIFI_OFF_1[] PROGMEM  ={ // wifi icon
 
 
 
-void CDisplayBasePage::init() {
-  m_oWiFiRefresh.start(5000,false);
-  Appl.MsgBus.registerEventReceiver(this);
+void CDisplayBasePage::init(const char *pszName) {
+  m_oDisplayRefresh.start(5000,false);
+  Appl.MsgBus.registerEventReceiver(this,pszName);
 };
 
 /**
@@ -78,9 +78,9 @@ int CDisplayBasePage::drawPageHeader(CDisplay *pDisplay) {
     pDisplay->setTextColor(COLOR_WHITE);
     pDisplay->print(Appl.getISOTime());
 
-    if(m_oWiFiRefresh.isDone()) {
+    if(m_oDisplayRefresh.isDone()) {
       m_nRSSI = WiFi.RSSI();
-      m_oWiFiRefresh.restart();
+      m_oDisplayRefresh.restart();
     }
 
     // char szWiFiStatus[10];

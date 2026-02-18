@@ -4,6 +4,7 @@
 #include <Display.h>
 #include <DisplayPage.h>
 #include <DisplayBasePage.h>
+#include <DisplayChart.h>
 
 
 class CDisplayAccessPointPage : public CDisplayPage {
@@ -42,5 +43,18 @@ class CDisplayTempPageLarge : public CDisplayBasePage {
 class CDisplayHumidityPageLarge : public CDisplayBasePage {
     public:
         CDisplayHumidityPageLarge(const char *pszName) : CDisplayBasePage(pszName,PageType::LOOP) {}
+        virtual void show(CDisplay *pDisplay) override;
+};
+
+class CDisplayChartPage : public CDisplayBasePage {
+    protected:
+        CDisplayChart m_oTempChart;
+    public:
+        CDisplayChartPage(const char *pszName) : 
+                        CDisplayBasePage(pszName,PageType::LOOP),
+                        m_oTempChart(SENSOR_INDOOR) 
+                        {
+                            m_oTempChart.collectDataType(CDisplayChart::DataType::TEMP);
+                        }
         virtual void show(CDisplay *pDisplay) override;
 };
