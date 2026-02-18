@@ -3,27 +3,27 @@
 
 #include <CaptivePortal.h>
 #include <WiFiController.h>
-#include <DevelopmentHelper.h>
+#include <JsonHelper.h>
 
 
 #define DNS_DEFAULT_PORT 53
 
 CCaptivePortal::CCaptivePortal(bool bAutoRegisterOnMsgBus) {
     if(bAutoRegisterOnMsgBus) {
-        Appl.MsgBus.registerEventReceiver(this);
+        Appl.MsgBus.registerEventReceiver(this,__FUNCTION__);
     }
 }
 
 void CCaptivePortal::writeConfigTo(JsonObject &oCfgNode, bool bHideCritical) {
-    oCfgNode["enabled"] = m_oConfig.Enabled;
-    oCfgNode["onAccessPointMode"] = m_oConfig.OnAccessPointMode;
-    oCfgNode["onStationMode"] = m_oConfig.OnStationMode;
+    oCfgNode["enabled"]             = m_oConfig.Enabled;
+    oCfgNode["onAccessPointMode"]   = m_oConfig.OnAccessPointMode;
+    oCfgNode["onStationMode"]       = m_oConfig.OnStationMode;
 }
 
 void CCaptivePortal::readConfigFrom(JsonObject &oCfgNode) {
-    LSC::setValue(&m_oConfig.Enabled, oCfgNode["enabled"], &m_oConfig.Enabled);
-    LSC::setValue(&m_oConfig.OnAccessPointMode, oCfgNode["onAccessPointMode"], &m_oConfig.OnAccessPointMode);
-    LSC::setValue(&m_oConfig.OnStationMode, oCfgNode["onStationMode"], &m_oConfig.OnStationMode);
+    LSC::setJsonValue(oCfgNode,"enabled",           &   m_oConfig.Enabled);
+    LSC::setJsonValue(oCfgNode,"onAccessPointMode", &   m_oConfig.OnAccessPointMode);
+    LSC::setJsonValue(oCfgNode,"onStationMode",     &   m_oConfig.OnStationMode);
 }
 
 void CCaptivePortal::writeStatusTo(JsonObject &oStatusNode) {
@@ -93,6 +93,8 @@ int CCaptivePortal::receiveEvent(const void * pSender, int nMsg, const void * pM
                     m_oStatus.WiFiModeIsAP = (nClass == WIFI_ACCESS_POINT_MODE);
                     startPortal();
                 }
+            } else {
+                DEBUG_INFO("Captive Portal: Not enabled - skipping start");
             }
             break;
 
