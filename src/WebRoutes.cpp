@@ -25,13 +25,15 @@
 #include <web/de.json.gz.h>
 #include <web/en.json.gz.h>
 
-
-
 void sendGzipResponse(AsyncWebServerRequest *pRequest, AsyncWebServerResponse *pResponse) {
     DEBUG_FUNC_START();
     DEBUG_INFOS("WEB: sending %s",pRequest->url().c_str());
+    #if DEBUGINFOS
+        unsigned long ulTime = millis();
+    #endif
     pResponse->addHeader("Content-Encoding", "gzip");
     pRequest->send(pResponse);
+    DEBUG_INFOS("WEB: sending %s - done (%lu ms)",pRequest->url().c_str(), millis() - ulTime);
     DEBUG_FUNC_END();
 }
 
@@ -163,4 +165,4 @@ void registerWebRoutes(CWebServer &oWebServer) {
         sendJsonResponse(oStatus,request);
 	});
 }
-/* touched by page compiler : 2026-01-22T14:40:23.391Z */
+/* touched by page compiler : 2026-02-01T14:26:54.721Z */

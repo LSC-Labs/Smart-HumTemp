@@ -14,57 +14,56 @@
  * - Web Server with WebSocket support
  * 
  */
-#include <Arduino.h>
+
 #include <AppConfig.h>
+#include <Appl.h>
 #include <AppControl.h>
 #include <FileSystem.h>
-#include <Appl.h>
 #include <WiFiController.h>
-#include <MDNSController.h>
-#include <CaptivePortal.h>
+#include <NTPHandler.h>
+
+// #include <MDNSController.h>
+// #include <CaptivePortal.h>
 #include <MQTTController.h>
-#include <WebSocket.h>
 #include <WebServer.h>
-// #include <WebRoutes.h>   - if you have custom web routes, include your WebRoutes.h here
-#include <DevelopmentHelper.h>
-#include <DHTSensor.h>
-#include <AppControl.h>
-#include <AppStatusLed.h>
-#include <Button.h>
 #include <WebRoutes.h>
+#include <DHTSensor.h>
+#include <AppStatusLed.h>
+// #include <Button.h>
 #include <Display.h>
 #include <DisplayPages.h>
-#include <NTPHandler.h>
+
 
 // Instanziate the Sensor (Location 1, DHT22 on D4)
 CDHTSensor oDHTSensor(D4,DHT11,SENSOR_INDOOR); // GPIO2 , DHT22 Sensor, Location 1 
 
 CFS oFS;
 CWiFiController oWiFiController;
-CMDNSController oMDNSController; // Auto registers on Message Bus
-CCaptivePortal  oCaptivePortal;  // Auto registers on Message Bus
+// CMDNSController oMDNSController; // Auto registers on Message Bus
+// CCaptivePortal  oCaptivePortal;  // Auto registers on Message Bus
 CMQTTController oMqttController;
 CWebSocket      oWebSocket("/ws");
 CWebServer      oWebServer(80);
 CAppControl     oAppControl;
 CAppStatusLed   oStatusLED(D6,D5,D0,false);
-CButton         oBtn(D7,true);
+// CButton         oBtn(D7,true);
 CDisplay        oDisplay;
 CNTPHandler     oNTP;
-// D8 - Ein / Aus Sensor
-
-
-// Insert an application control instance to handle the application coordination and logic
-// CAppControl oAppControl;
-
+// D8 - Ein / Aus Sensor Relais
 
 #ifdef DEBUGINFOS
 void runDebugTests() {
+  DEBUG_INFO("Registered Event Receiver:");
+  Appl.MsgBus.dumpReceiver();
+
+  DEBUG_INFO("Registered Config Handler:");
+  Appl.dumpConfigHandler();  
+
   JsonDocument oCfg;
   JsonObject oCfgNode = oCfg.to<JsonObject>();
   Appl.writeConfigTo(oCfgNode,false);
   DEBUG_INFO("Current configuration:");
-  DEBUG_JSON_OBJ(oCfgNode);
+  serializeJsonPretty(oCfgNode,Serial);
 }
 #endif
 
@@ -75,75 +74,95 @@ void registerDisplayPages() {
   // oDisplay.registerPage(new CDisplayTempPage("TemperaturePage"));
   oDisplay.registerPage(new CDisplayTempPageLarge("LargeTempPage"));
   oDisplay.registerPage(new CDisplayHumidityPageLarge("LargeHumPage"));
-  
 }
+
 
 void registerModules() 
 {
+  DEBUG_FUNC_START();
   Appl.registerModule("wifi",          &oWiFiController);
-  Appl.registerModule("mqtt",          &oMqttController);
   Appl.registerModule("web",           &oWebServer);
-  Appl.registerModule("captiveportal", &oCaptivePortal);
+  Appl.registerModule("mqtt",          &oMqttController);
+  // Appl.registerModule("captiveportal", &oCaptivePortal);
   Appl.registerModule("sensor",        &oDHTSensor);
   Appl.registerModule("ntp",           &oNTP);
 
-  Appl.addConfigHandler("display",  &oDisplay);
+  Appl.addConfigHandler("display",    &oDisplay);
 
   // Connect the message bus to the application control implementation
-  Appl.MsgBus.registerEventReceiver(&oAppControl);
-  Appl.MsgBus.registerEventReceiver(&oWebSocket);   
-  Appl.MsgBus.registerEventReceiver(&oStatusLED);
+  Appl.MsgBus.registerEventReceiver(&oAppControl,"AppCtrl");
+  Appl.MsgBus.registerEventReceiver(&oStatusLED,"StatusLED");
+  Appl.MsgBus.registerEventReceiver(&oWebSocket,"WebSocket");
+
+  DEBUG_FUNC_END();
 }
 
 void setup() {
   Serial.begin(115200);
   DEBUG_FUNC_START();
   DEBUG_INFOS("\nInitializing application: \"%s\" Version: %s\n",APP_NAME,APP_VERSION);
+
+  // Initialize a simple feedback to the user...
+  // set the status led to blue
+  // and enable the display to show a startup panel...
+  oStatusLED.setColor(RGB_COLOR::BLUE);
   registerDisplayPages();
   oDisplay.init();
-
-  registerModules();
-
-  oStatusLED.setColor(RGB_COLOR::BLUE);
+  
+  // Initialize the main application object to enable logging
+  // and message processing..
   Appl.init(APP_NAME,APP_VERSION);
   Appl.sayHello();
   
+  // Register all modules and simple receivers to the 
+  // main application
+  registerModules();
+
   // If button is pressed during startup, do not load config (to allow recovery)
-  bool bUseConfigData = !oBtn.isPressed();
+  // bool bUseConfigData = !oBtn.isPressed();
+  bool bUseConfigData = true;
   if(bUseConfigData) Appl.readConfigFrom(CONFIG_FILE);
 
+  // Show some diagnostic info on the serial bus 
   Appl.printDiag();
-  Appl.Log.logInfo(F("Initializing services..."));
+  ApplLogInfo(F("Initializing services..."));
  
   // Initialize and start the WiFi
   oWiFiController.startWiFi(bUseConfigData);
-  oMqttController.setup();
-  
-  // Prepare and start the Web Server
-  // enable registerWebRoutes if you have custom web routes (WebRoutes.cpp/h)
-  oWebServer.addHandler(&oWebSocket);
-  registerWebRoutes(oWebServer);  
-  oWebServer.begin();
-  
 
+  // Setup the web server and the web socket...
+  // enable registerWebRoutes if you have custom web routes (WebRoutes.cpp/h)
+  registerWebRoutes(oWebServer);  
+  oWebServer.addHandler(&oWebSocket);
+  oWebServer.begin();
+
+  // oMqttController.setup();
+
+  if(oWiFiController.Status.isInAccessPointMode) {
+    delay(500);
+    oDisplay.activatePage("APConfig-Page");
+    oDisplay.freezePage();
+  } else {
+    // Message broker only, if in station mode...
+    oMqttController.setup();
+  }
+
+  // Be friendly, say hello and let start....
   Appl.Log.logInfo(F("Hello world... - let's start the show!"));
   oStatusLED.showStartupFlashLight(250);
   delay(200);
-  oBtn.startMonitoring();
+
+  // if there is a button, start monitoring (interrupt) now
+  // oBtn.startMonitoring();
 
   #ifdef DEBUGINFOS
     runDebugTests();
   #endif
   
-  if(oWiFiController.Status.isInAccessPointMode) {
-    oDisplay.activatePage("APConfig-Page");
-    oDisplay.freezePage();
-  }
-
   DEBUG_FUNC_END();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // put your main code here, to run repeatedly
   Appl.dispatch();
 }

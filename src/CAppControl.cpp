@@ -9,6 +9,7 @@
 #include <Appl.h>
 
 
+
 CAppControl::CAppControl()
 {
     // Constructor implementation (if needed)
@@ -35,6 +36,11 @@ int CAppControl::receiveEvent(const void* pSender, int nMsgID, const void * pMsg
             m_bButtonPressed = true;
             m_oButtonRestartDelay.restart(); 
             break;
+        case MSG_SENSOR_STATUS:
+            // Status of a sensor received...
+            storeSensorStatus((DHTStatus *) pMsg, nMsgClass);
+            break;
+
         case MSG_APPL_LOOP:
             // Main loop processing
             dispatch();
@@ -42,6 +48,16 @@ int CAppControl::receiveEvent(const void* pSender, int nMsgID, const void * pMsg
 
     }
     return nResult; // Return appropriate status
+}
+
+void CAppControl::storeSensorStatus(DHTStatus * pStatus, int nSensorID) {
+    if(pStatus) {
+        JsonDocument *pStatusDoc = new JsonDocument();
+        (* pStatusDoc)["id"] = nSensorID;
+        JsonObject pPayload = (* pStatusDoc).as<JsonObject>();
+        pStatus->writeStatusTo(pPayload);
+        m_tStatusQueue.push(pStatusDoc);
+    }
 }
 
 void CAppControl::dispatch()
@@ -55,4 +71,14 @@ void CAppControl::dispatch()
             Appl.MsgBus.sendEvent(this,MSG_REBOOT_REQUEST,0,0);
         }
     } 
+    // Dispatch the status documents... if in the queue...
+    while(!m_tStatusQueue.empty()) {
+		JsonDocument * pMessageToProcess = m_tStatusQueue.front();
+        JsonObject oDataToSend = (*pMessageToProcess).as<JsonObject>();
+        Appl.MsgBus.sendEvent(this,MSG_MQTT_SEND_JSONDATA,&oDataToSend,MSG_JSON_OBJECT);
+        delete(pMessageToProcess);
+		m_tStatusQueue.pop();
+	}
+
+
 }
