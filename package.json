@@ -23,6 +23,7 @@
     "watch-WebPages": "watchlist src/web/pages lib/PLibESPV1/src/web/pages -- npm run update-Pages",
     "watch-css": "sass --watch --style expanded --source-map --embed-sources --no-error-css scss/:src/web/css/",
     "build-Pages": "gulp buildPages",
+    "update-Versions": "node scripts/updateVersionInfos",
     "compile-Pages": "gulp compilePages"
   },
   "author": "LSC Labs - P.Liebl",

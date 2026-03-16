@@ -1,7 +1,7 @@
 {
     "DebugMode": true,
     "prog_name": "Smart-HumTemp",
-    "prog_version": "0.1.0.E-D",
+    "prog_version": "1.0.0.7-T",
     "uptime": "00:00:02",
     "starttime": 78,
     "now": 2325,
@@ -16,8 +16,6 @@
     "sketch_free_size": 2224128,
     "fs_total": 1024000,
     "fs_used": 16384,
-    
-
     "wifi": {
         "stopTime": 0,
         "restartTime": 4294967295,
@@ -35,7 +33,7 @@
         "netmask": "255.255.255.0",
         "rssi": 31
     },
-        "mqtt": {
+    "mqtt": {
         "isEnabled": true,
         "isConnected": false,
         "started": 33445,
@@ -75,5 +73,4 @@
     "fan": {
         "active": false
     }
-    
 }

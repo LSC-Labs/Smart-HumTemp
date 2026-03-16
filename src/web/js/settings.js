@@ -13,8 +13,8 @@ const APP_SETTINGS = {
      * Use them in this files as $(<name>)
      */
     "app": {
-        "prog_name": "Smart-HumTemp",    // Name of the program
-        "prog_ver": "0.1",
+        "prog_name":"Smart-HumTemp",
+        "prog_ver":"1.0.0",
         "prog_copy": "(c) 2025 LSC-Labs",
         "logLevel": 5,                          // Log Level for the web application (0..7)
         "ws": {
