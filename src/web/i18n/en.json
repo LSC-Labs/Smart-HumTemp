@@ -1,5 +1,4 @@
 {
-  "_language": "English",
   "menu": {
     "signin": "Sign in",
     "signout": "Sign out",
@@ -7,7 +6,7 @@
     "Settings": "Settings",
     "Maintenance": "Maintenance",
     "Device": "Device",
-    "title": "$(prog_name)"
+    "title": "Hum/Temp Mon"
   },
   "main": {
     "ok": "OK",
@@ -37,8 +36,6 @@
     }
   },
   "System": {
-    "title": "Restart or Reset",
-    "desc": "Restart or Reset the device",
     "Restart": {
       "btn": "Restart Device",
       "title": "Restart Device",
@@ -52,10 +49,11 @@
       "desc": "All settings will be dropped, the device will reboot with factory settings.",
       "confirm": "Are you sure you want to reset the device to factory defaults? The device will restart in delivery state.",
       "waitmsg": "Please wait while the device is resetting to factory defaults..."
-    }
+    },
+    "title": "Restart or Reset",
+    "desc": "Restart or Reset the device"
   },
   "WiFi": {
-    "legend": "Wi-Fi Settings",
     "scan": {
       "title": "Scanning WiFi - please wait...",
       "titleDone": "Select a WiFi to use...",
@@ -112,10 +110,10 @@
     "STA": {
       "type": "Client",
       "desc": "Type your Wi-Fi Network's SSID or press 'Scan' for nearby Wireless Networks to join."
-    }
+    },
+    "legend": "Wi-Fi Settings"
   },
   "MQTT": {
-    "title": "Message Broker",
     "desc": {
       "enable": "Enable the message broker to use this service",
       "configure": "Configure the message broker or disable to stop the service"
@@ -151,11 +149,18 @@
     "syncrate": {
       "label": "Sync time (seconds)",
       "info": "Sync time to send a heartbeat message to the MQTT server"
-    }
+    },
+    "hatopic": {
+      "label": "Home Assistant Topic",
+      "info": "Topic prefix for Home Assistant integration (see your Home Assistant MQTT implementation)"
+    },
+    "ha": {
+      "label": "Home Assistant Support",
+      "info": "Enable or disable MQTT support for Home Assistant"
+    },
+    "title": "Message Broker"
   },
   "Device": {
-    "legend": "Welcome to your $(prog_name) Device",
-    "title": "Set the name of your device (hostname) and the password for the admin account",
     "hostname": {
       "text": "Host name",
       "title": "Enter the hostname here..."
@@ -163,11 +168,11 @@
     "password": {
       "text": "Password",
       "title": "Enter the password for the admin account"
-    }
+    },
+    "legend": "Welcome to your $(prog_name) Device",
+    "title": "Set the name of your device (hostname) and the password for the admin account"
   },
   "SysCfg": {
-    "legend": "Backup & Restore",
-    "title": "Backup or Restore the device configuration. Be aware, the backup file is <b>NOT</b> encrypted.<br/> Store it on a safe place to avoid loosing your access credentials...",
     "Backup": {
       "title": "Backup Settings",
       "desc": "Save the config to a backup file.",
@@ -178,7 +183,9 @@
       "desc": "Click and choose your file from your local device to be restored.",
       "btn": "Restore Settings",
       "invalidFile": "The file you selected is not a valid backup file..."
-    }
+    },
+    "legend": "Backup & Restore",
+    "title": "Backup or Restore the device configuration. Be aware, the backup file is <b>NOT</b> encrypted.<br/> Store it on a safe place to avoid loosing your access credentials..."
   },
   "Firmware": {
     "legend": "Firmware update (current firmware: $(prog_ver))",
@@ -190,14 +197,25 @@
     "noInternet": "It seems, there is no internet connection available or the firmware update server is down."
   },
   "Status": {
-    "legend": "Status of $(prog_name) Ver.: $(prog_ver)",
     "panel": {
+      "dewpoint": "Dew Point switch",
       "device": "Device",
       "network": "Network",
       "mqtt": "Message broker",
-      "dewpoint": "Dew Point switch",
       "sensor": "Sensor"
     },
+    "fan": {
+      "active": "Fan active"
+    },
+    "sensor": {
+      "OD": "Sensor (Outdoor)",
+      "ID": "Sensor (Indoor)",
+      "dewpoint": "DP",
+      "temp": "Temperature",
+      "hum": "Humidity",
+      "dew": "Dew Point"
+    },
+    "legend": "Status of $(prog_name) Ver.: $(prog_ver)",
     "hostname": "Systemname",
     "uptime": "Uptime",
     "flashSize": "Flash size",
@@ -218,24 +236,9 @@
     "disconReason": "Disconnect reason",
     "memOK": "$(sketch_size) Kb used of $(flash_available) Kb => $(flash_used_percent)%",
     "memWarn": "Too less memory to update via OTA ! $(flash_used_percent)% used.",
-    "dewpoints": "Dew Points In / Out",
-    "fan": {
-      "active": "Fan active"
-    },
-    "sensor": {
-      "OD": "Sensor (Outdoor)",
-      "ID": "Sensor (Indoor)",
-      "dewpoint": "DP",
-      "temp": "Temperature",
-      "hum": "Humidity",
-      "dew": "Dew Point"
-    }
+    "dewpoints": "Dew Points In / Out"
   },
   "Sensor": {
-    "legend": "Sensor",
-    "title": "Set and adjust the sensor.",
-    "ID": "Indoor",
-    "OD": "Outdoor",
     "adjust_t": {
       "label": "Adjust temp",
       "info": "Adjust the temperature"
@@ -249,7 +252,6 @@
       "info": "Select the sensor is physical, or you use open weather map instead."
     },
     "open": {
-      "name": "Open weather map",
       "appID": {
         "label": "App ID",
         "info": "An open weather app id is needed, register and enter here..."
@@ -261,7 +263,17 @@
       "lat": {
         "label": "Latitude",
         "info": "Latitude of your location"
-      }
-    }
-  }
+      },
+      "name": "Open weather map"
+    },
+    "type": {
+      "label": "Type of sensor",
+      "info": "Select the sensor is type, or you use open weather map."
+    },
+    "legend": "Sensor",
+    "title": "Set and adjust the sensor.",
+    "ID": "Indoor",
+    "OD": "Outdoor"
+  },
+  "_language": "English"
 }
