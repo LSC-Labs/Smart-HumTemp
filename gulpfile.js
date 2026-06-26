@@ -40,10 +40,12 @@ gulp.task('compilePages', async(cb) => {
     runCompilePages(cb,Settings);
 });
 
-import {runSyncFiles} from './scripts/_syncFiles.js';
+/*
+import {runSyncFiles} from './scripts/syncFiles.js';
 gulp.task('syncFiles', async (cb) => {
     console.log("Syncing files...");
     runSyncFiles(cb,Settings);
     // cb();
 });
+*/
 // #endregion
