@@ -1,9 +1,16 @@
 {
+      "menu": {
+        "title": "Hum/Temp Mon" 
+    },
     "Sensor": {
         "legend": "Sensor",
         "title" : "Set and adjust the sensor.",
         "ID": "Indoor",
         "OD": "Outdoor",
+        "type": {
+            "label":"Type of sensor",
+            "info" :"Select the sensor is type, or you use open weather map."
+        },
         "adjust_t": {
             "label": "Adjust temp",
             "info" : "Adjust the temperature"

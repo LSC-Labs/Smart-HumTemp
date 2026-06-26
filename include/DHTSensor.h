@@ -4,8 +4,16 @@
 #include <Appl.h>
 #include <AppConfig.h>
 #include <ModuleInterface.h>
+#include <MQTTController.h>
+#include <JsonNode.h>
 #include <SimpleDelay.h>
+
 #include <DHT.h>
+
+
+#ifndef LSC_DHT_DEFAULT_SENSOR
+    #define LSC_DHT_DEFAULT_SENSOR DHT21
+#endif
 
 struct DHTStatus {
     const char * SENSOR_STATUS_TEMPC         = "temp_c";
@@ -14,9 +22,12 @@ struct DHTStatus {
     const char * SENSOR_STATUS_TEMPC_RAW     = "temp_c_raw";
     const char * SENSOR_STATUS_TEMPF_RAW     = "temp_f_raw";
     const char * SENSOR_STATUS_HUMIDITY_RAW  = "hum_raw";
-    const char * SENSOR_STATUS_DEWPOINT      = "dew_point";
+    const char * SENSOR_STATUS_DEWPOINT_C    = "dew_c";
     const char * SENSOR_STATUS_LAST_UPD_MS   = "last_upd_ms";
+    const char * SENSOR_STATUS_MONITORING    = "active";
+    const char * SENSOR_STATUS_LOCATION      = "loc";
 
+    bool  MonitoringActive = false;
     float TempRawC      = NAN;
     float TempRawF      = NAN;
     float HumidityRaw   = NAN;
@@ -28,23 +39,32 @@ struct DHTStatus {
     unsigned long LastWeatherCallMillis = 0;
     unsigned long LastSensorReadMillis  = 0;
 
-    void writeStatusTo(JsonObject & oStatus) {
-        oStatus[SENSOR_STATUS_TEMPC]        = TempC;
-        oStatus[SENSOR_STATUS_TEMPC_RAW]    = TempRawC;
-        oStatus[SENSOR_STATUS_TEMPF]        = TempF;
-        oStatus[SENSOR_STATUS_TEMPF_RAW]    = TempRawF;
-        oStatus[SENSOR_STATUS_HUMIDITY]     = Humidity;
-        oStatus[SENSOR_STATUS_HUMIDITY_RAW] = HumidityRaw;
-        oStatus[SENSOR_STATUS_DEWPOINT]     = DewPoint;
-        oStatus[SENSOR_STATUS_LAST_UPD_MS]  = LastWeatherCallMillis;
+    /**
+     * ! will not write values that are set to NAN (JsonNode);
+     */
+    void writeStatusTo(CJsonNode & oStatus, int nLevel) {
+        oStatus.setValue(SENSOR_STATUS_MONITORING,  MonitoringActive);
+        oStatus.setValue(SENSOR_STATUS_LOCATION,    SensorLocation);
+        oStatus.setValue(SENSOR_STATUS_TEMPC,       TempC);
+        oStatus.setValue(SENSOR_STATUS_TEMPF,       TempF);
+        oStatus.setValue(SENSOR_STATUS_HUMIDITY,    Humidity);
+        oStatus.setValue(SENSOR_STATUS_DEWPOINT_C,    DewPoint);
+        if(nLevel >= STATUS_LEVEL_VERBOSE) {
+            oStatus.setValue(SENSOR_STATUS_TEMPC_RAW, TempRawC);
+            oStatus.setValue(SENSOR_STATUS_TEMPF_RAW, TempRawF);
+            oStatus.setValue(SENSOR_STATUS_HUMIDITY_RAW, HumidityRaw);
+            oStatus.setValue(SENSOR_STATUS_LAST_UPD_MS, LastWeatherCallMillis);
+        }
     }
 
 };
 
 struct DHTConfig {
-    bool bIsPhysicalSensor  = true;
-    float adjustTempC       = 0.0;        // Temperature adjustment in °C
-    float adjustHumidity    = 0.0;     // Humidity adjustment
+    bool    bIsPhysicalSensor   = true;
+    int     sensorType          = LSC_DHT_DEFAULT_SENSOR;      // Sensor type to be used
+    int     sensorPin           = -1;         // HW Pin
+    float   adjustTempC         = 0.0;        // Temperature adjustment in °C
+    float   adjustHumidity      = 0.0;        // Humidity adjustment
     /** only needed if open weather map is used **/
     // String strWeatherURL = "https://api.openweathermap.org/data/3.0/onecall";
     String strWeatherURL = "http://api.openweathermap.org/data/2.5/weather";
@@ -64,12 +84,12 @@ struct DHTConfig {
 class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
 
     protected:
-        DHTConfig Config;
+        DHTConfig    Config;
         CSimpleDelay m_oSensorReadDelay;      
         CSimpleDelay m_oUpdateDelay; // Update delay overall...
-        DHT *pSensor = nullptr; 
-        bool m_bInternetAvailable = false;
-        JsonDocument OpenWeatherData;
+        DHT         *pSensor = nullptr; 
+        bool         m_bInternetAvailable = false;
+        JsonNode     OpenWeatherData;
 
     public:
         DHTStatus Status;
@@ -77,15 +97,18 @@ class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
     public: 
         CDHTSensor();
         ~CDHTSensor();
-        CDHTSensor(int nPort, int nSensorType, int nLocation);
 
-        void begin(int nPort, int nSensorType, int nLocation);
+        CDHTSensor(int nPort, int nLocation, int nSensorType = -1);
+        void setup(int nPort, int nLocation, int nSensorType = -1);
+        void startMonitoring(int nSensorType = -1);
         void dispatch();
 
+        bool isMonitoringActive();
+
         // Interface implementations
-        void writeStatusTo(JsonObject & oObj) override;
-        void readConfigFrom(JsonObject & oCfg) override;
-        void writeConfigTo(JsonObject & oCfg, bool bHideCritical) override;
+        void writeStatusTo(CJsonNode & oObj, int nLevel = STATUS_LEVEL_INFO);
+        void readConfigFrom(JsonNode & oCfg) override;
+        void writeConfigTo(JsonNode  & oCfg, bool bHideCritical) override;
         int  receiveEvent(const void * pSender, int nMsg, const void * pData, int nType) override;
 
         float getTemperature(bool bAsFarenheit = false);
@@ -93,12 +116,14 @@ class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
         float getDewPoint(bool bInFarenheit = false);
         float calculateDewPoint(float fTemp, float fHum, bool bInFarenheit = false);
         bool  isInternetAvailable();
+        // Home Assistant Component Interface implementation (if used)
+//        void insertComponentDiscovery(const char * pszComponentName, JsonObject & oComponentArea) override;
+        void insertHADiscoveryCompontents(JsonNode & oDiscoveryComponents);
 
     protected:
         float adjustAndStoreTemperatures(float fRawTemp, bool bInFarenheit = false);
         float adjustAndStoreHumidity(float fRawHumi);
         void  updateFromPhysicalSensor();
         void  updateFromOpenWeatherMap();
-        
 };
 

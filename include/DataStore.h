@@ -17,7 +17,7 @@ class CDataStore {
         unsigned int m_nDataSize = 0;
         int m_nCurrentIndex = -1;
         bool m_bOverflow = false;
-        int m_nMaxSize = 100;
+        unsigned int m_nMaxSize = 100;
 
 public:
         CDataStore() {}
@@ -58,7 +58,7 @@ public:
         void add(T oData) {
             // Move to next Position
             m_nCurrentIndex++;
-            if(m_nCurrentIndex >= m_nMaxSize) {
+            if(m_nCurrentIndex >= (int) m_nMaxSize) {
                 m_nCurrentIndex = 0;
                 m_bOverflow = true;
             }

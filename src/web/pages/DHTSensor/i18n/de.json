@@ -1,10 +1,6 @@
 {
     "menu": {
-        "title": "Taupunkt Schalter",
-        "DewSwitch": "Schwellwerte",
-        "SensorsID": "Innensensor",
-        "SensorsOD": "Außensensor"        
-
+        "title": "Taupunkt Monitor" 
     },
     
     "Sensor": {
@@ -12,6 +8,10 @@
         "title" : "Justieren und konfigurieren des Sensors.",
         "ID": "Innen",
         "OD": "Außen",
+         "type": {
+            "label":"Typ des Sensors",
+            "info" :"Entweder der Typ des Sensors, oder \"open weather map\"."
+        },
         "adjust_t": {
             "label": "Temp Offset",
             "info" : "Justieren der Temperatur"

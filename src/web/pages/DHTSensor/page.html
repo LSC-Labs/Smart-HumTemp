@@ -11,13 +11,36 @@
     <legend><span data-i18n="Sensor.legend"></span>  (<span data-i18n="Sensor.$(type)"></span>)</legend>
     <div class="pageDesc" data-i18n="Sensor.title"> </div>
 
+
+    <!--
+        2026-06-09 : User can select the sensor type...
+    -->
+    <div class="row form-group" data-auth="RO">
+        <label class="$(col-label-class) info-icon" data-i18n="@title:Sensor.type.info">
+            <span data-i18n="Sensor.type.label"></span>
+            <icon data-icon="Info"></icon>
+        </label>
+        <div class="$(col-input-class)">
+            <select id="type" class="form-control input-sm">
+                <option value="11">DHT-11</option>
+                <option value="12">DHT-12</option>
+                <option value="21">DHT-21 (AM-2301)</option>
+                <option value="22">DHT-22</option>
+                <option value="99">Open Weather Map (Internet)</option>
+            </select>
+        </div>
+    </div>
+        
+
+
     <!-- Physical sensor or open weather map -->
+     <!--
     <div class="row form-group" style="display:none" >
         <label class="$(col-label-class) info-icon" data-i18n="@title:Sensor.physical.info">
             <span data-i18n="Sensor.physical.label"></span>
             <icon data-icon="Info"></icon>
         </label>
-         <div class="$(col-input-class)">
+        <div class="$(col-input-class)">
             <form>
                 <label class="radio-inline">
                     <input type="radio" value="1" name="physical" disabled>
@@ -30,6 +53,10 @@
             </form>
         </div>
     </div>
+
+    -->
+
+
     <!-- Adjust Temperature settings-->
     <div class="row form-group" data-auth="RO">
         <label class="$(col-label-class) info-icon" data-i18n="@title:Sensor.adjust_t.info">
@@ -67,7 +94,7 @@
         </div>
     
     <!-- Open Weather settings -->
-    <div data-viewon="physical=0" data-auth="RO">
+    <div data-viewon="type=99" data-auth="RO">
         <div class="row form-group" data-auth="RO">
             <label  class="$(col-label-class) info-icon" 
                     data-i18n="@title:Sensor.open.appID.info">

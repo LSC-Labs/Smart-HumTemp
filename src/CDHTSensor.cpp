@@ -13,53 +13,80 @@
 #include <Network.h>
 #include <ESP8266HTTPClient.h>
 #include <Msgs.h>
-#include <JsonHelper.h>
+#include <JsonNode.h>
 
 const char * SENSOR_CFG_IS_SENSOR        = "physical";
+const char * SENSOR_CFG_SENSOR_TYPE      = "type";
 const char * SENSOR_CFG_ADJUST_TEMP      = "adjust_temp";
 const char * SENSOR_CFG_ADJUST_HUMIDITY  = "adjust_humidity";
 const char * SENSOR_CFG_OPENWEATHER_URL  = "web_url";
 const char * SENSOR_CFG_OPENWEATHER_KEY  = "web_key";
 const char * SENSOR_CFG_OPENWEATHER_LON  = "web_lon";
 const char * SENSOR_CFG_OPENWEATHER_LAT  = "web_lat";
-const char * SENSOR_STATUS_TYPE          = "type";
+
+// const char * SENSOR_STATUS_TYPE          = "type";
 const char * SENSOR_STATUS_INTERNET      = "internet";
 
 CDHTSensor::CDHTSensor() {};
 CDHTSensor::~CDHTSensor() { if(pSensor != nullptr) free(pSensor); }
 
-CDHTSensor::CDHTSensor(int nPin, int nSensorType, int nLocation) {
+CDHTSensor::CDHTSensor(int nPin, int nLocation, int nSensorType) {
     DEBUG_FUNC_START();
     m_oUpdateDelay.start(5000);
-    begin(nPin,nSensorType,nLocation);
+    setup(nPin,nLocation,nSensorType);
 };
 
-void CDHTSensor::begin(int nPin, int nSensorType, int nLocation) {
-    DEBUG_FUNC_START_PARMS("%d,%d,%d",nPin,nSensorType,nLocation);
-    if(nSensorType == USE_OPEN_WEATHER) {
-        Config.bIsPhysicalSensor = false;
-        m_oSensorReadDelay.start(this->Config.nWeatherCallTimeout);
-    } else {
-        Config.bIsPhysicalSensor = true;
-        pSensor =  new DHT(nPin,nSensorType);
-        pSensor->begin();
-        m_oSensorReadDelay.start(this->Config.nSensorReadTimeout);
-    }
-    Status.SensorLocation = nLocation;    
+void CDHTSensor::setup(int nPin, int nLocation, int nSensorType) {
+    DEBUG_FUNC_START_PARMS("%d,%d,%d",nPin,nLocation,nSensorType);
+    if(nSensorType > -1)    Config.sensorType = nSensorType;
+    Config.sensorPin        = nPin;
+    Status.SensorLocation   = nLocation;  
     DEBUG_FUNC_END();
 };
 
-void CDHTSensor::readConfigFrom(JsonObject & oCfg) {
+/**
+ * @brief Begin monitoring
+ */
+void CDHTSensor::startMonitoring(int nSensorType) {
+    DEBUG_FUNC_START_PARMS("%d",nSensorType);
+    if(nSensorType > -1) Config.sensorType = nSensorType;
+    if(Config.sensorType > -1) {
+        if(Config.sensorType == USE_OPEN_WEATHER) {
+            Config.bIsPhysicalSensor = false;
+            m_oSensorReadDelay.start(this->Config.nWeatherCallTimeout);
+        } else {
+            if(Config.sensorPin > -1) {
+                Config.bIsPhysicalSensor = true;
+                if(pSensor) free(pSensor);  // Maybe new call with new sensor type...
+                pSensor =  new DHT(Config.sensorPin,Config.sensorType);
+                pSensor->begin();
+                m_oSensorReadDelay.start(this->Config.nSensorReadTimeout);
+            } else {
+                DEBUG_INFOS("- Monitoring not started, missing information...")
+                DEBUG_INFOS("  - Pin(%d) / Type(%d) must be set correctly (>0)",Config.sensorPin,Config.sensorType);
+
+            }
+        }
+        Status.MonitoringActive = true;
+    } 
+    DEBUG_FUNC_END();
+}
+
+bool CDHTSensor::isMonitoringActive() { return(Status.MonitoringActive); }
+
+
+void CDHTSensor::readConfigFrom(JsonNode & oCfg) {
     DEBUG_FUNC_START();
     DEBUG_INFOS("--- sensor adjust temp value : %f",Config.adjustTempC);
     DEBUG_JSON_OBJ(oCfg);
     
-    LSC::setJsonValue(oCfg,SENSOR_CFG_IS_SENSOR,        &   Config.bIsPhysicalSensor);
-    LSC::setJsonValue(oCfg,SENSOR_CFG_ADJUST_HUMIDITY,  &   Config.adjustHumidity);
-    LSC::setJsonValue(oCfg,SENSOR_CFG_ADJUST_TEMP,      &   Config.adjustTempC);
-    LSC::setJsonValue(oCfg,SENSOR_CFG_OPENWEATHER_KEY,      Config.strWeatherAppID);
-    LSC::setJsonValue(oCfg,SENSOR_CFG_OPENWEATHER_LON,      Config.strWeatherLongitude);
-    LSC::setJsonValue(oCfg,SENSOR_CFG_OPENWEATHER_LAT,      Config.strWeatherLatitude);
+    oCfg.storeValueIf(SENSOR_CFG_IS_SENSOR,        &   Config.bIsPhysicalSensor);
+    oCfg.storeValueIf(SENSOR_CFG_SENSOR_TYPE,      &   Config.sensorType);
+    oCfg.storeValueIf(SENSOR_CFG_ADJUST_HUMIDITY,  &   Config.adjustHumidity);
+    oCfg.storeValueIf(SENSOR_CFG_ADJUST_TEMP,      &   Config.adjustTempC);
+    oCfg.storeValueIf(SENSOR_CFG_OPENWEATHER_KEY,      Config.strWeatherAppID);
+    oCfg.storeValueIf(SENSOR_CFG_OPENWEATHER_LON,      Config.strWeatherLongitude);
+    oCfg.storeValueIf(SENSOR_CFG_OPENWEATHER_LAT,      Config.strWeatherLatitude);
 
     m_oSensorReadDelay.start( Config.bIsPhysicalSensor      ? 
                             Config.nSensorReadTimeout   :
@@ -71,9 +98,10 @@ void CDHTSensor::readConfigFrom(JsonObject & oCfg) {
     DEBUG_FUNC_END();
 }
 
-void CDHTSensor::writeConfigTo(JsonObject & oCfg, bool bHideCritical) {
+void CDHTSensor::writeConfigTo(JsonNode & oCfg, bool bHideCritical) {
     DEBUG_FUNC_START();
     oCfg[SENSOR_CFG_IS_SENSOR]          = Config.bIsPhysicalSensor;
+    oCfg[SENSOR_CFG_SENSOR_TYPE]        = Config.sensorType;
     oCfg[SENSOR_CFG_ADJUST_HUMIDITY]    = Config.adjustHumidity;
     oCfg[SENSOR_CFG_ADJUST_TEMP]        = Config.adjustTempC;
     oCfg[SENSOR_CFG_OPENWEATHER_KEY]    = Config.strWeatherAppID;
@@ -82,25 +110,17 @@ void CDHTSensor::writeConfigTo(JsonObject & oCfg, bool bHideCritical) {
     DEBUG_FUNC_END();
 }
 
-void CDHTSensor::writeStatusTo(JsonObject & oStatus) {
-    DEBUG_FUNC_START();
-    oStatus[SENSOR_CFG_IS_SENSOR]       = Config.bIsPhysicalSensor;
-    if(!Config.bIsPhysicalSensor) {
-        oStatus[SENSOR_STATUS_INTERNET]     = isInternetAvailable();
+
+void CDHTSensor::writeStatusTo(CJsonNode & oStatus, int nLevel) {
+    if(nLevel >= STATUS_LEVEL_INFO) {
+        oStatus.setValue(SENSOR_CFG_IS_SENSOR,Config.bIsPhysicalSensor ? "1" : "0");
     }
-    Status.writeStatusTo(oStatus);
-    /*
-    oStatus[SENSOR_STATUS_TEMPC]        = Status.TempC;
-    oStatus[SENSOR_STATUS_TEMPC_RAW]    = Status.TempRawC;
-    oStatus[SENSOR_STATUS_TEMPF]        = Status.TempF;
-    oStatus[SENSOR_STATUS_TEMPF_RAW]    = Status.TempRawF;
-    oStatus[SENSOR_STATUS_HUMIDITY]     = Status.Humidity;
-    oStatus[SENSOR_STATUS_HUMIDITY_RAW] = Status.HumidityRaw;
-    oStatus[SENSOR_STATUS_DEWPOINT]     = Status.DewPoint;
-    oStatus[SENSOR_STATUS_LAST_UPD_MS]  = Status.LastWeatherCallMillis;
-    */
-    
-    DEBUG_FUNC_END();
+    if(nLevel >= STATUS_LEVEL_VERBOSE) {
+        if(!Config.bIsPhysicalSensor) {
+            oStatus[SENSOR_STATUS_INTERNET]     = isInternetAvailable();
+        }
+    }
+    Status.writeStatusTo(oStatus,nLevel);
 }
 
 /// @brief Listen to the messagebus - detect if internet is available or not.
@@ -121,9 +141,70 @@ int CDHTSensor::receiveEvent(const void * pSender, int nMsg, const void * pData,
         case MSG_WIFI_DISABLED :    m_bInternetAvailable = false;
             DEBUG_INFO(" ## -> Disabling Internet access for sensors...");
                                     break;
+
+        case MSG_HA_FILL_DISCOVERY_CMPS: insertHADiscoveryCompontents(*((JsonNode *) pData));
+
+                                    break;
     }
     return(EVENT_MSG_RESULT_OK);
 }
+
+// Messages for Home Assistance
+// -> https://github.com/home-assistant/core/blob/dev/homeassistant/components/mqtt/abbreviations.py
+// -> https://www.home-assistant.io/integrations/mqtt/#supported-abbreviations-in-mqtt-discovery-messages
+
+void CDHTSensor::insertHADiscoveryCompontents(JsonNode & oComponents) {
+
+    String strCompID;
+    strCompID = Appl.getDeviceID();
+    strCompID += "-hum";
+    JsonNode * pHumSensor = oComponents.getObject("hum",true);
+    pHumSensor->setValue("p",                   "sensor");
+    pHumSensor->setValue("device_class",        "humidity");
+    pHumSensor->setValue("unit_of_measurement", "%");
+    pHumSensor->setValue("value_template" ,     "{{ value_json.hum }}");
+    pHumSensor->setValue("unique_id",           strCompID.c_str());
+
+    strCompID = Appl.getDeviceID();
+    strCompID += "-temp_c";
+    JsonNode * pTempSensor = oComponents.getObject("temp_c",true);
+    pTempSensor->setValue("p",                  "sensor");
+    pTempSensor->setValue("device_class",       "temperature");
+    pTempSensor->setValue("unit_of_measurement","°C");
+    pTempSensor->setValue("value_template",     "{{ value_json.temp_c}}");
+    pTempSensor->setValue("unique_id",          strCompID.c_str());
+
+    strCompID = Appl.getDeviceID();
+    strCompID += "-dew_c";
+    JsonNode * oDewSensor = oComponents.getObject("dew_c",true);
+    oDewSensor->setValue("p",                   "sensor");
+    oDewSensor->setValue("device_class",        "temperature");
+    oDewSensor->setValue("unit_of_measurement", "°C");
+    oDewSensor->setValue("value_template",      "{{ value_json.dew_c}}");
+    oDewSensor->setValue("unique_id",           strCompID.c_str());
+    oDewSensor->setValue("icon","mdi:water-thermometer-outline");
+    oDewSensor->setValue("name","Dewpoint");
+
+    
+
+        /*
+    "some_unique_component_id1": {
+      "p": "sensor",
+      "device_class":"temperature",
+      "unit_of_measurement":"°C",
+      "value_template":"{{ value_json.temperature}}",
+      "unique_id":"temp01ae_t"
+    },
+    "some_unique_id2": {
+      "p": "sensor",
+      "device_class":"humidity",
+      "unit_of_measurement":"%",
+      "value_template":"{{ value_json.humidity}}",
+      "unique_id":"temp01ae_h"
+    }
+      */
+}
+
 
 void CDHTSensor::dispatch() {
     // Currently no periodic tasks needed.
@@ -143,14 +224,14 @@ float CDHTSensor::adjustAndStoreTemperatures(float fRawData, bool bAsFarenheit) 
     if(!isnan(fRawData)) {
         if(bAsFarenheit) {
             Status.TempRawF =  fRawData;
-            Status.TempF = fRawData + LSC::getFarenheitFromCelsius(Config.adjustTempC);
+            Status.TempF    = fRawData + LSC::getFarenheitFromCelsius(Config.adjustTempC);
             Status.TempRawC = LSC::getCelsiusFromFarenheit(fRawData);
-            Status.TempC = LSC::getCelsiusFromFarenheit(Status.TempRawF);
+            Status.TempC    = LSC::getCelsiusFromFarenheit(Status.TempRawF);
         } else {
             Status.TempRawC = fRawData;
-            Status.TempC = fRawData + Config.adjustTempC;
+            Status.TempC    = fRawData + Config.adjustTempC;
             Status.TempRawF = LSC::getFarenheitFromCelsius(fRawData);
-            Status.TempF = LSC::getFarenheitFromCelsius(Status.TempC);
+            Status.TempF    = LSC::getFarenheitFromCelsius(Status.TempC);
         }
     } 
     DEBUG_FUNC_END_PARMS("%f",bAsFarenheit ? Status.TempF : Status.TempC);
@@ -228,16 +309,19 @@ void  CDHTSensor::updateFromOpenWeatherMap() {
                 DEBUG_INFOS("Received data :\n%s",strBody.c_str());
                 if(nCode == 200) {
                     OpenWeatherData.clear();
-                    deserializeJson(OpenWeatherData,strBody);
+                    OpenWeatherData.parse(strBody.c_str());
+                    // deserializeJson(OpenWeatherData,strBody);
                     // OpenWeatherData["c"] = APP_COPYRIGHT;
                     // OpenWeatherData.set(strBody.c_str());
                     Appl.MsgBus.sendEvent(this,MSG_OPEN_WEATHER_DATA,&OpenWeatherData,Status.DewPoint);
-                    JsonObject oMain = OpenWeatherData["main"].as<JsonObject>();
-                    DEBUG_JSON_OBJ(oMain);
-                    float fTempC = oMain["temp"];
-                    float fHumi  = oMain["humidity"];
-                    adjustAndStoreTemperatures(fTempC,false);
-                    adjustAndStoreHumidity(fHumi);
+                    JsonNode * pMain = OpenWeatherData.getObject("main");
+                    if(pMain) {
+                        DEBUG_JSON_OBJ(*pMain);
+                        float fTempC = pMain->getValueAsFloat("temp");
+                        float fHumi  = pMain->getValueAsFloat("humidity");
+                        adjustAndStoreTemperatures(fTempC,false);
+                        adjustAndStoreHumidity(fHumi);
+                    }
                 }
             } catch(...) {
                 Serial.println(F("[E] Exception in requesting data from Open weather"));
@@ -270,11 +354,13 @@ float CDHTSensor::getHumidity() {
 /// @return the current (adjusted) temperature
 float CDHTSensor::getTemperature(bool bAsFarenheit) {
     DEBUG_FUNC_START_PARMS("bAsFarenheit=%d",bAsFarenheit);
-    if(this->pSensor) {
-        updateFromPhysicalSensor();
-    }
-    else {
-        updateFromOpenWeatherMap();
+    if(isMonitoringActive()) {
+        if(this->pSensor) {
+            updateFromPhysicalSensor();
+        }
+        else {
+            updateFromOpenWeatherMap();
+        }
     }
     float fResult = bAsFarenheit ? Status.TempF : Status.TempC;
     DEBUG_FUNC_END_PARMS(" - temperature : %f",fResult);
@@ -320,17 +406,19 @@ float CDHTSensor::calculateDewPoint(float fTemp, float fHumidity, bool bAsFarenh
 ///        SensorStatus object via the message bus.
 float CDHTSensor::getDewPoint(bool bInFarenheit) {
     float fResult = Status.DewPoint;
-    if(m_oUpdateDelay.isDone()) {
-        DEBUG_INFOS("SENSOR %d - start getDewPoint(%d)",Status.SensorLocation,bInFarenheit);
-        getTemperature();
-        getHumidity();
-        if(!isnan(Status.TempC) && !isnan(Status.Humidity)) {
-            Status.DewPoint = calculateDewPoint(Status.TempC,Status.Humidity,bInFarenheit);
-            fResult = Status.DewPoint; 
-        }
-        Appl.MsgBus.sendEvent(this,MSG_SENSOR_STATUS,&Status,Status.SensorLocation);
-        m_oUpdateDelay.restart();
-        DEBUG_INFOS("SENSOR %d - end  getDewPoint()",Status.SensorLocation);
-    } 
+    if(isMonitoringActive()) {
+        if(m_oUpdateDelay.isDone()) {
+            DEBUG_INFOS("SENSOR %d - start getDewPoint(%d)",Status.SensorLocation,bInFarenheit);
+            getTemperature();
+            getHumidity();
+            if(!isnan(Status.TempC) && !isnan(Status.Humidity)) {
+                Status.DewPoint = calculateDewPoint(Status.TempC,Status.Humidity,bInFarenheit);
+                fResult = Status.DewPoint; 
+            }
+            Appl.MsgBus.sendEvent(this,MSG_SENSOR_STATUS,&Status,Status.SensorLocation);
+            m_oUpdateDelay.restart();
+            DEBUG_INFOS("SENSOR %d - end  getDewPoint()",Status.SensorLocation);
+        } 
+    }
     return(fResult);
 }

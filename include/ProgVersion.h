@@ -5,11 +5,13 @@
 // The build nummer will be incremented in this file by platform.io -> prebuild steps
 
 #define PROG_VERSION_NAME  "Smart-HumTemp"
+#define PROG_AUTHOR        "LSC Labs - P.Liebl"
+#define PROG_HOMEPAGE      "https://github.com/lsc-labs/Smart-HumTemp#readme"
 
-#define PROG_VERSION_MAJOR 1
-#define PROG_VERSION_MINOR 0
+#define PROG_VERSION_MAJOR 2
+#define PROG_VERSION_MINOR 1
 #define PROG_VERSION_PATCH 0
-#define PROG_VERSION_BUILD 8
-#define PROG_VERSION       "1.0.0"
-#define PROG_VERSION_SHORT "1.0"
-#define PROG_VERSION_LONG  "1.0.0.8"
+#define PROG_VERSION_BUILD 9
+#define PROG_VERSION       "2.1.0"
+#define PROG_VERSION_SHORT "2.1"
+#define PROG_VERSION_LONG  "2.1.0.9"
