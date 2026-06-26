@@ -27,9 +27,9 @@ class CCaptivePortal : public IModule {
         CCaptivePortal(bool bAutoRegisterOnMsgBus = true);
         CCaptivePortal*  setup(DNSServer *pDNSServer = nullptr, IPAddress oRedirectIP = (uint32_t)0);
         int receiveEvent(const void * pSender, int nMsg, const void * pMessage, int nClass) override;
-        void writeConfigTo(JsonObject &oCfgNode, bool bHideCritical) override;
-        void readConfigFrom(JsonObject &oCfgNode) override;
-        void writeStatusTo(JsonObject &oStatusNode) override;
+        void writeConfigTo(JsonNode &oCfgNode, bool bHideCritical) override;
+        void readConfigFrom(JsonNode &oCfgNode) override;
+        void writeStatusTo(JsonNode &oStatusNode, int nLevel = STATUS_LEVEL_INFO) override;
         bool startPortal();
         void stopPortal();
         bool isActive() { return m_oStatus.Active; }

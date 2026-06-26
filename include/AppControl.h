@@ -20,8 +20,8 @@ class CAppControl : public IMsgEventReceiver
         bool m_bButtonPressed = false;      // Button is currently pressed
         CSimpleDelay m_oButtonRestartDelay; // Delay to wait until button pressed is valid for restart
         DHTStatus *m_pSensorStatus = nullptr;
-        std::queue<JsonDocument *> m_tStatusQueue;
-
+        std::queue<const char *> m_tStatusQueue;    // Store messages as char pointer to avoid memory leaks from to much JSON Documents
+        String m_strStatusCache;
     public:
         CAppControl();
 

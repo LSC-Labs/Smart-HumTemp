@@ -35,8 +35,7 @@
 
 
 // Instanziate the Sensor (Location 1, DHT22 on D4)
-CDHTSensor oDHTSensor(D4,DHT11,SENSOR_INDOOR); // GPIO2 , DHT22 Sensor, Location 1 
-
+CDHTSensor oDHTSensor(D4,SENSOR_INDOOR); // GPIO2 , DHT22 Sensor, Location 1 
 CFS oFS;
 CWiFiController oWiFiController;
 // CMDNSController oMDNSController; // Auto registers on Message Bus
@@ -59,21 +58,28 @@ void runDebugTests() {
   DEBUG_INFO("Registered Config Handler:");
   Appl.dumpConfigHandler();  
 
-  JsonDocument oCfg;
-  JsonObject oCfgNode = oCfg.to<JsonObject>();
+  JsonNode oCfgNode;
   Appl.writeConfigTo(oCfgNode,false);
   DEBUG_INFO("Current configuration:");
-  serializeJsonPretty(oCfgNode,Serial);
+  Serial.println(oCfgNode.getAsJsonTextPretty());
+  CJsonNode * pWiFiNode = oCfgNode.getObject("wifi");
+  if(pWiFiNode) {
+    Serial.println(pWiFiNode->getAsJsonText());
+  }
 }
 #endif
 
 void registerDisplayPages() {
+  DEBUG_FUNC_START();
+
   oDisplay.registerPage(new CDisplayLogoPage(DISPLAY_START_PAGE));
   oDisplay.registerPage(new CDisplayAccessPointPage("APConfig-Page"));
   // oDisplay.registerPage(new CDisplayDewPointPage("DewPointPage"));
   // oDisplay.registerPage(new CDisplayTempPage("TemperaturePage"));
   oDisplay.registerPage(new CDisplayTempPageLarge("LargeTempPage"));
   oDisplay.registerPage(new CDisplayHumidityPageLarge("LargeHumPage"));
+  
+  DEBUG_FUNC_END();
 }
 
 
@@ -87,7 +93,7 @@ void registerModules()
   Appl.registerModule("sensor",        &oDHTSensor);
   Appl.registerModule("ntp",           &oNTP);
 
-  Appl.addConfigHandler("display",    &oDisplay);
+  // Appl.addConfigHandler("display",    &oDisplay);
 
   // Connect the message bus to the application control implementation
   Appl.MsgBus.registerEventReceiver(&oAppControl,"AppCtrl");
@@ -98,7 +104,6 @@ void registerModules()
 }
 
 void setup() {
-  Serial.begin(115200);
   DEBUG_FUNC_START();
   DEBUG_INFOS("\nInitializing application: \"%s\" Version: %s\n",APP_NAME,APP_VERSION);
 
@@ -109,20 +114,20 @@ void setup() {
   registerDisplayPages();
   oDisplay.init();
   
-  // Initialize the main application object to enable logging
-  // and message processing..
+  // Register all modules and simple receivers to the main application
+  // - do this first, so they can receive the initialization messages.
+  registerModules();
+
+  // Initialize the main application object
   Appl.init(APP_NAME,APP_VERSION);
   Appl.sayHello();
   
-  // Register all modules and simple receivers to the 
-  // main application
-  registerModules();
-
   // If button is pressed during startup, do not load config (to allow recovery)
   // bool bUseConfigData = !oBtn.isPressed();
   bool bUseConfigData = true;
   if(bUseConfigData) Appl.readConfigFrom(CONFIG_FILE);
 
+  
   // Show some diagnostic info on the serial bus 
   Appl.printDiag();
   ApplLogInfo(F("Initializing services..."));
@@ -136,12 +141,10 @@ void setup() {
   oWebServer.addHandler(&oWebSocket);
   oWebServer.begin();
 
-  // oMqttController.setup();
-
   if(oWiFiController.Status.isInAccessPointMode) {
     delay(500);
-    oDisplay.activatePage("APConfig-Page");
-    oDisplay.freezePage();
+    // oDisplay.activatePage("APConfig-Page");
+    // oDisplay.freezePage();
   } else {
     // Message broker only, if in station mode...
     oMqttController.setup();
@@ -154,10 +157,13 @@ void setup() {
 
   // if there is a button, start monitoring (interrupt) now
   // oBtn.startMonitoring();
+  oDHTSensor.startMonitoring();
 
   #ifdef DEBUGINFOS
     runDebugTests();
   #endif
+
+  Appl.start();
   
   DEBUG_FUNC_END();
 }
