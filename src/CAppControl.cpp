@@ -52,11 +52,10 @@ int CAppControl::receiveEvent(const void* pSender, int nMsgID, const void * pMsg
 
 void CAppControl::storeSensorStatus(DHTStatus * pStatus, int nSensorID) {
     if(pStatus) {
-        JsonDocument *pStatusDoc = new JsonDocument();
-        (* pStatusDoc)["id"] = nSensorID;
-        JsonObject pPayload = (* pStatusDoc).as<JsonObject>();
-        pStatus->writeStatusTo(pPayload);
-        m_tStatusQueue.push(pStatusDoc);
+        CJsonNode oStatus;
+        oStatus.setValue("id",nSensorID);
+        pStatus->writeStatusTo(oStatus,STATUS_LEVEL_INFO);
+        m_tStatusQueue.push(strdup(oStatus.getAsJsonText()));
     }
 }
 
@@ -71,12 +70,13 @@ void CAppControl::dispatch()
             Appl.MsgBus.sendEvent(this,MSG_REBOOT_REQUEST,0,0);
         }
     } 
+
     // Dispatch the status documents... if in the queue...
     while(!m_tStatusQueue.empty()) {
-		JsonDocument * pMessageToProcess = m_tStatusQueue.front();
-        JsonObject oDataToSend = (*pMessageToProcess).as<JsonObject>();
-        Appl.MsgBus.sendEvent(this,MSG_MQTT_SEND_JSONDATA,&oDataToSend,MSG_JSON_OBJECT);
-        delete(pMessageToProcess);
+		const char * pszStatus = m_tStatusQueue.front();
+        Appl.MsgBus.sendEvent(this,MSG_MQTT_SEND_TEXTSTATE,pszStatus,MSG_JSON_OBJECT);
+        free((void *)pszStatus);
+        // delete(pMessageToProcess);
 		m_tStatusQueue.pop();
 	}
 

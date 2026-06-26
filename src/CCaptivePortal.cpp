@@ -3,30 +3,30 @@
 
 #include <CaptivePortal.h>
 #include <WiFiController.h>
-#include <JsonHelper.h>
+#include <JsonNode.h>
 
 
 #define DNS_DEFAULT_PORT 53
 
 CCaptivePortal::CCaptivePortal(bool bAutoRegisterOnMsgBus) {
     if(bAutoRegisterOnMsgBus) {
-        Appl.MsgBus.registerEventReceiver(this,__FUNCTION__);
+        Appl.MsgBus.registerEventReceiver(this,"CaptivePortal");
     }
 }
 
-void CCaptivePortal::writeConfigTo(JsonObject &oCfgNode, bool bHideCritical) {
+void CCaptivePortal::writeConfigTo(JsonNode &oCfgNode, bool bHideCritical) {
     oCfgNode["enabled"]             = m_oConfig.Enabled;
     oCfgNode["onAccessPointMode"]   = m_oConfig.OnAccessPointMode;
     oCfgNode["onStationMode"]       = m_oConfig.OnStationMode;
 }
 
-void CCaptivePortal::readConfigFrom(JsonObject &oCfgNode) {
-    LSC::setJsonValue(oCfgNode,"enabled",           &   m_oConfig.Enabled);
-    LSC::setJsonValue(oCfgNode,"onAccessPointMode", &   m_oConfig.OnAccessPointMode);
-    LSC::setJsonValue(oCfgNode,"onStationMode",     &   m_oConfig.OnStationMode);
+void CCaptivePortal::readConfigFrom(JsonNode &oCfgNode) {
+    oCfgNode.storeValueIf("enabled",           &   m_oConfig.Enabled);
+    oCfgNode.storeValueIf("onAccessPointMode", &   m_oConfig.OnAccessPointMode);
+    oCfgNode.storeValueIf("onStationMode",     &   m_oConfig.OnStationMode);
 }
 
-void CCaptivePortal::writeStatusTo(JsonObject &oStatusNode) {
+void CCaptivePortal::writeStatusTo(JsonNode &oStatusNode, int nLevel) {
     oStatusNode["active"] = m_oStatus.Active;
 }
 

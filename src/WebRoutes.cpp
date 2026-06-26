@@ -13,7 +13,8 @@
 #endif
 
 #include <WebServer.h>
-#include <JsonHelper.h>
+#include <JsonNode.h>
+// #include <JsonHelper.h>
 #include <web/index.html.gz.h>
 #include <web/app.css.gz.h>
 #include <web/index.js.gz.h>
@@ -38,12 +39,13 @@ void sendGzipResponse(AsyncWebServerRequest *pRequest, AsyncWebServerResponse *p
     DEBUG_FUNC_END();
 }
 
-void sendJsonResponse(JsonDocument &oDoc, AsyncWebServerRequest *pRequest) {
+void sendJsonResponse(JsonNode &oDoc, AsyncWebServerRequest *pRequest) {
     DEBUG_FUNC_START();
     DEBUG_INFOS("WEB: %s",pRequest->url().c_str());
     DEBUG_JSON_OBJ(oDoc);
     AsyncResponseStream *pStream =  pRequest->beginResponseStream(F("application/json"));
-    serializeJson(oDoc, *pStream);
+    pStream->write(oDoc.getAsJsonText());
+    // serializeJson(oDoc, *pStream);
     pRequest->send(pStream);
     DEBUG_FUNC_END();
 }
@@ -165,13 +167,13 @@ void registerWebRoutes(CWebServer &oWebServer) {
 	});
     
     oWebServer.on("/apiV1/status", HTTP_GET, [](AsyncWebServerRequest *request) {
-        JSON_DOC(oStatus,4096);
-        Appl.writeStatusTo(oStatus);
+        JsonNode oStatus;
+        Appl.writeStatusTo(oStatus,STATUS_LEVEL_INFO);
         sendJsonResponse(oStatus,request);
 	});
     
     oWebServer.on("/apiV1/sysstatus", HTTP_GET, [](AsyncWebServerRequest *request) {
-        JSON_DOC(oStatus,2048);
+        JsonNode oStatus;
         Appl.writeSystemStatusTo(oStatus);
         sendJsonResponse(oStatus,request);
 	});

@@ -9,7 +9,7 @@
 #include <Display.h>
 #include <DisplayPage.h>
 #include <LSCUtils.h>
-#include <JsonHelper.h>
+// #include <JsonHelper.h>
 #include <AppControl.h>
 
 const char * CFG_ALWAYS_ON      = "alwaysOn";
@@ -43,7 +43,7 @@ CDisplay::CDisplay() :
     // Adafruit code page error correction.
     // @see https://learn.adafruit.com/adafruit-gfx-graphics-library/graphics-primitives
     cp437(true);
-    Appl.MsgBus.registerEventReceiver(this,__FUNCTION__);
+    Appl.MsgBus.registerEventReceiver(this,"Display");
     m_oRotateDelay.start(Config.RotateTime);
     m_oPowerOffDelay.start(Config.PowerOffTime);
     m_oPageRefreshDelay.start(Config.PageRefreshTime);
@@ -61,8 +61,10 @@ void CDisplay::init(int nI2CAddress, bool bResetPin) {
     // In Debug Mode - show start panel from vendor for a second...
     #ifdef DEBUGINFOS
         display();
-        delay(200);
+        delay(100);
     #endif
+    m_bIsInitialized = true;
+    delay(100);
     clearDisplay();
     // Activate the start page, if it is in place...
     activatePage(DISPLAY_START_PAGE);
@@ -81,15 +83,15 @@ int CDisplay::receiveEvent(const void * pSender, int nMsgType, const void * pMes
     return(EVENT_MSG_RESULT_OK);
 } 
 
-void CDisplay::readConfigFrom(JsonObject & oCfg) {
-    LSC::setJsonValue(oCfg,CFG_ALWAYS_ON,       &Config.AlwaysOn);
-    LSC::setJsonValue(oCfg,CFG_STATIC_PAGE,      Config.StaticDisplayName);
-    LSC::setJsonValue(oCfg,CFG_ROTATE,          &Config.RotateDisplays);
-    LSC::setJsonValue(oCfg,CFG_ROTATE_TIME,     &Config.RotateTime);
-    LSC::setJsonValue(oCfg,CFG_POWER_OFF_TIME,  &Config.PowerOffTime);
+void CDisplay::readConfigFrom(JsonNode & oCfg) {
+    oCfg.storeValueIf(CFG_ALWAYS_ON,       &Config.AlwaysOn);
+    oCfg.storeValueIf(CFG_STATIC_PAGE,      Config.StaticDisplayName);
+    oCfg.storeValueIf(CFG_ROTATE,          &Config.RotateDisplays);
+    oCfg.storeValueIf(CFG_ROTATE_TIME,     &Config.RotateTime);
+    oCfg.storeValueIf(CFG_POWER_OFF_TIME,  &Config.PowerOffTime);
 };
 
-void CDisplay::writeConfigTo(JsonObject & oCfg, bool bHideCritical) {
+void CDisplay::writeConfigTo(JsonNode & oCfg, bool bHideCritical) {
     oCfg[CFG_ALWAYS_ON]         = Config.AlwaysOn;
     oCfg[CFG_STATIC_PAGE]       = Config.StaticDisplayName;
     oCfg[CFG_ROTATE]            = Config.RotateDisplays;
@@ -309,7 +311,7 @@ bool CDisplay::activatePage(String &strName) {
 /// @return true, if page was activated and shown, false, if pPage is null, or page was already active...
 bool CDisplay::activatePage(IDisplayPage * pPage) {
     bool bIsActivated = false;
-    if(pPage != nullptr) {
+    if(m_bIsInitialized && pPage != nullptr) {
         if(pPage != m_pCurrentPage ){
             hideCurrentPage();
             m_pCurrentPage = pPage;
