@@ -14,14 +14,15 @@ const APP_SETTINGS = {
      */
     "app": {
         "prog_name":"Smart-HumTemp",
-        "prog_ver":"2.1.0",
+        "prog_ver":"2.2.0",
         "prog_copy": "(c) 2025 LSC-Labs",
         "logLevel": 5,                          // Log Level for the web application (0..7)
         "ws": {
             "recon": true,  // Enable WebSocket reconnection- disable for testing to avoid messages in the html console
         },
-        "latest": {
-            "url": "https://api.github.com/repos/LSC-Labs/Smart-HumTemp/releases/latest"
+         "firmware": {
+            "list": "https://api.github.com/repos/LSC-Labs/Smart-HumTemp/releases",
+            "latest": "https://api.github.com/repos/LSC-Labs/Smart-HumTemp/releases/latest"
         },
         "GitHubPage": "https://github.com/LSC-Labs/Smart-HumTemp",
         "mailto":"office@lsc-labs.de?subject=$(prog_name) - v$(prog_ver)",
@@ -224,6 +225,7 @@ const APP_SETTINGS = {
         },
     ]    
 }
+
 
 
 

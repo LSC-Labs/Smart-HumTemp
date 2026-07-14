@@ -1,9 +1,9 @@
 {
     "name": "Smart-HumTemp",
     "major": "2",
-    "minor": "1",
+    "minor": "2",
     "patch": "0",
-    "build": 9,
+    "build": 4,
     "author": "LSC Labs - P.Liebl",
     "homepage": "https://github.com/lsc-labs/Smart-HumTemp#readme"
 }
