@@ -100,6 +100,9 @@ void registerModules()
   Appl.MsgBus.registerEventReceiver(&oStatusLED,"StatusLED");
   Appl.MsgBus.registerEventReceiver(&oWebSocket,"WebSocket");
 
+  // Register the wifi to the mqtt Home Assistant auto discovery.
+  oMqttController.registerHomeAssistantComponent("wifi",  &oWiFiController);
+  oMqttController.registerHomeAssistantComponent("sensor",&oDHTSensor);
   DEBUG_FUNC_END();
 }
 

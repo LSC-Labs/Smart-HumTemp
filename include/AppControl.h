@@ -19,9 +19,11 @@ class CAppControl : public IMsgEventReceiver
         bool m_bRebootPending = false;      // Reboot is pending
         bool m_bButtonPressed = false;      // Button is currently pressed
         CSimpleDelay m_oButtonRestartDelay; // Delay to wait until button pressed is valid for restart
-        DHTStatus *m_pSensorStatus = nullptr;
-        std::queue<const char *> m_tStatusQueue;    // Store messages as char pointer to avoid memory leaks from to much JSON Documents
-        String m_strStatusCache;
+        CSimpleDelay m_oHAStateSendDelay;   // Delay to wait befor sending next state to HA
+        // DHTStatus *m_pSensorStatus = nullptr;
+        // std::queue<const char *> m_tStatusQueue;    // Store messages as char pointer to avoid memory leaks from to much JSON Documents
+        // String m_strStatusCache;
+        bool         m_bSensorStatusChanged = false;
     public:
         CAppControl();
 
@@ -30,5 +32,5 @@ class CAppControl : public IMsgEventReceiver
         void dispatch();
 
     protected:
-        void storeSensorStatus(DHTStatus *pStatus, int nSensor);
+        // void storeSensorStatus(DHTStatus *pStatus, int nSensor);
 };

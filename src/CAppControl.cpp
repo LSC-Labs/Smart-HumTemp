@@ -14,6 +14,7 @@ CAppControl::CAppControl()
 {
     // Constructor implementation (if needed)
     m_oButtonRestartDelay.start(5000,false);
+    m_oHAStateSendDelay.start(2000,true);
 }   
 
 
@@ -38,7 +39,8 @@ int CAppControl::receiveEvent(const void* pSender, int nMsgID, const void * pMsg
             break;
         case MSG_SENSOR_STATUS:
             // Status of a sensor received...
-            storeSensorStatus((DHTStatus *) pMsg, nMsgClass);
+            m_bSensorStatusChanged = true;
+            // storeSensorStatus((DHTStatus *) pMsg, nMsgClass);
             break;
 
         case MSG_APPL_LOOP:
@@ -49,7 +51,7 @@ int CAppControl::receiveEvent(const void* pSender, int nMsgID, const void * pMsg
     }
     return nResult; // Return appropriate status
 }
-
+/*
 void CAppControl::storeSensorStatus(DHTStatus * pStatus, int nSensorID) {
     if(pStatus) {
         CJsonNode oStatus;
@@ -58,6 +60,7 @@ void CAppControl::storeSensorStatus(DHTStatus * pStatus, int nSensorID) {
         m_tStatusQueue.push(strdup(oStatus.getAsJsonText()));
     }
 }
+    */
 
 void CAppControl::dispatch()
 {
@@ -70,15 +73,27 @@ void CAppControl::dispatch()
             Appl.MsgBus.sendEvent(this,MSG_REBOOT_REQUEST,0,0);
         }
     } 
-
+    if(m_bSensorStatusChanged) {
+        if(m_oHAStateSendDelay.isDone()) {
+            JsonNode *pState = Appl.getState();
+            Appl.MsgBus.sendEvent(this,MSG_MQTT_SEND_JSONSTATE,pState,MSG_JSON_OBJECT);
+            m_bSensorStatusChanged = false;
+            m_oHAStateSendDelay.restart();
+        }
+    }
+    /*
     // Dispatch the status documents... if in the queue...
-    while(!m_tStatusQueue.empty()) {
-		const char * pszStatus = m_tStatusQueue.front();
-        Appl.MsgBus.sendEvent(this,MSG_MQTT_SEND_TEXTSTATE,pszStatus,MSG_JSON_OBJECT);
-        free((void *)pszStatus);
-        // delete(pMessageToProcess);
-		m_tStatusQueue.pop();
+    if(!m_tStatusQueue.empty()) {
+        JsonNode *pState = Appl.getState();
+        Appl.MsgBus.sendEvent(this,MSG_MQTT_SEND_JSONSTATE,pState,MSG_JSON_OBJECT);
+        while(!m_tStatusQueue.empty()) {
+            // const char * pszState = Appl.getStateAsText();
+            free((void *)pszState);
+            // delete(pMessageToProcess);
+            m_tStatusQueue.pop();
+        }
 	}
+        */
 
 
 }

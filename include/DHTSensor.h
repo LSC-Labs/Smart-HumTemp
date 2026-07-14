@@ -73,6 +73,10 @@ struct DHTConfig {
     String strWeatherLongitude = "31.553641";
     String strWeatherLatitude  = "33.556778";
     String strWeatherExclude;   
+
+    // Home Assistant Dewpoint Name in GUI - can be modified in Admin GUI
+    String strHADewPointName = "Dewpoint";
+
     unsigned long nWeatherCallTimeout = 1000 * 60 * 2; // Call every 2 minutes to avoid the 1000 calls per day limit.
 #ifdef DEBUGINFOS
     unsigned long nSensorReadTimeout = 20000; // Read the sensor in Debug Mode to avoid message flooding   
@@ -81,7 +85,7 @@ struct DHTConfig {
 #endif
 };
 
-class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
+class CDHTSensor : public IModule, public IHomeAssistantComponent { //  : IConfigHandler, IStatusHandler {
 
     protected:
         DHTConfig    Config;
@@ -118,8 +122,7 @@ class CDHTSensor : public IModule { //  : IConfigHandler, IStatusHandler {
         bool  isInternetAvailable();
         // Home Assistant Component Interface implementation (if used)
 //        void insertComponentDiscovery(const char * pszComponentName, JsonObject & oComponentArea) override;
-        void insertHADiscoveryCompontents(JsonNode & oDiscoveryComponents);
-
+        void insertComponentDiscovery(const char * pszComponentName,JsonNode & oComponents, CMQTTController *pController);
     protected:
         float adjustAndStoreTemperatures(float fRawTemp, bool bInFarenheit = false);
         float adjustAndStoreHumidity(float fRawHumi);

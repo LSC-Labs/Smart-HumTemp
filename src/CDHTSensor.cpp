@@ -3,12 +3,6 @@
 #endif
 
 #include <LSCUtils.h>
-
-// https://www.heise.de/select/make/2022/1/2135511212557842576
-// https://www.heise.de/select/make/2022/2/2204711461516715363
-// https://www.heise.de/select/make/2022/1/softlinks/x2yt?wt_mc=pred.red.make.make012022.022.softlink.softlink
-
-// See also : https://github.com/MakeMagazinDE/Taupunktluefter
 #include <DHTSensor.h>
 #include <Network.h>
 #include <ESP8266HTTPClient.h>
@@ -23,8 +17,6 @@ const char * SENSOR_CFG_OPENWEATHER_URL  = "web_url";
 const char * SENSOR_CFG_OPENWEATHER_KEY  = "web_key";
 const char * SENSOR_CFG_OPENWEATHER_LON  = "web_lon";
 const char * SENSOR_CFG_OPENWEATHER_LAT  = "web_lat";
-
-// const char * SENSOR_STATUS_TYPE          = "type";
 const char * SENSOR_STATUS_INTERNET      = "internet";
 
 CDHTSensor::CDHTSensor() {};
@@ -141,68 +133,48 @@ int CDHTSensor::receiveEvent(const void * pSender, int nMsg, const void * pData,
         case MSG_WIFI_DISABLED :    m_bInternetAvailable = false;
             DEBUG_INFO(" ## -> Disabling Internet access for sensors...");
                                     break;
-
-        case MSG_HA_FILL_DISCOVERY_CMPS: insertHADiscoveryCompontents(*((JsonNode *) pData));
-
-                                    break;
     }
     return(EVENT_MSG_RESULT_OK);
 }
 
 // Messages for Home Assistance
 // -> https://github.com/home-assistant/core/blob/dev/homeassistant/components/mqtt/abbreviations.py
-// -> https://www.home-assistant.io/integrations/mqtt/#supported-abbreviations-in-mqtt-discovery-messages
-
-void CDHTSensor::insertHADiscoveryCompontents(JsonNode & oComponents) {
-
+// -> https://www.home-assistant.io/integrations/mqtt
+void CDHTSensor::insertComponentDiscovery(const char * pszComponentName,JsonNode & oComponents, CMQTTController *pController) {
+    const char szValueSelectorFmt[] = "{{ value_json.%s.%s | float | round(2)}}";
+    char szValueSelector[128];
     String strCompID;
     strCompID = Appl.getDeviceID();
     strCompID += "-hum";
+    snprintf(szValueSelector,sizeof(szValueSelector),"{{ value_json.%s.hum }}",pszComponentName);
     JsonNode * pHumSensor = oComponents.getObject("hum",true);
     pHumSensor->setValue("p",                   "sensor");
     pHumSensor->setValue("device_class",        "humidity");
     pHumSensor->setValue("unit_of_measurement", "%");
-    pHumSensor->setValue("value_template" ,     "{{ value_json.hum }}");
+    pHumSensor->setValue("value_template" ,     szValueSelector);
     pHumSensor->setValue("unique_id",           strCompID.c_str());
 
     strCompID = Appl.getDeviceID();
     strCompID += "-temp_c";
+    snprintf(szValueSelector,sizeof(szValueSelector),szValueSelectorFmt,pszComponentName,"temp_c");
     JsonNode * pTempSensor = oComponents.getObject("temp_c",true);
     pTempSensor->setValue("p",                  "sensor");
     pTempSensor->setValue("device_class",       "temperature");
     pTempSensor->setValue("unit_of_measurement","°C");
-    pTempSensor->setValue("value_template",     "{{ value_json.temp_c}}");
+    pTempSensor->setValue("value_template",     szValueSelector);
     pTempSensor->setValue("unique_id",          strCompID.c_str());
 
     strCompID = Appl.getDeviceID();
     strCompID += "-dew_c";
+    snprintf(szValueSelector,sizeof(szValueSelector),szValueSelectorFmt,pszComponentName,"dew_c");
     JsonNode * oDewSensor = oComponents.getObject("dew_c",true);
     oDewSensor->setValue("p",                   "sensor");
     oDewSensor->setValue("device_class",        "temperature");
     oDewSensor->setValue("unit_of_measurement", "°C");
-    oDewSensor->setValue("value_template",      "{{ value_json.dew_c}}");
+    oDewSensor->setValue("value_template",      szValueSelector);
     oDewSensor->setValue("unique_id",           strCompID.c_str());
     oDewSensor->setValue("icon","mdi:water-thermometer-outline");
-    oDewSensor->setValue("name","Dewpoint");
-
-    
-
-        /*
-    "some_unique_component_id1": {
-      "p": "sensor",
-      "device_class":"temperature",
-      "unit_of_measurement":"°C",
-      "value_template":"{{ value_json.temperature}}",
-      "unique_id":"temp01ae_t"
-    },
-    "some_unique_id2": {
-      "p": "sensor",
-      "device_class":"humidity",
-      "unit_of_measurement":"%",
-      "value_template":"{{ value_json.humidity}}",
-      "unique_id":"temp01ae_h"
-    }
-      */
+    oDewSensor->setValue("name",Config.strHADewPointName.c_str());
 }
 
 
