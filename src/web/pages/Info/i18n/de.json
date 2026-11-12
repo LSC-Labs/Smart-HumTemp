@@ -1,0 +1,14 @@
+{
+    "Info": {
+        "legend": "Aktuelle Werte - $(prog_name)",
+        "panel" : {
+            "sensor": "Sensor"
+        },
+        "sensor": {
+            "temp": "Temperatur",
+            "hum" : "Luftfeuchtigkeit",
+            "dew" : "Taupunkt",
+            "abs_hum": "Absolute Feuchte"
+        }
+    }
+}

@@ -1,0 +1,44 @@
+<!--
+    Info page - current measurement values of the sensor.
+    The device status (heap, network, MQTT...) is shown by the Status page of PLibESPV1.
+    The values are read from apiV1/status (node "sensor") and refreshed every 5 seconds.
+-->
+<div id="InfoPage">
+    <!-- Current values of $(prog_name) Ver.: $(prog_ver) -->
+    <legend data-i18n="Info.legend"></legend>
+
+    <div class="row text-center">
+        <div class="col-md-8 col-md-offset-2">
+            <!-- Sensor values -->
+            <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <caption data-i18n="Info.panel.sensor"></caption>
+                    <tr>
+                        <th data-i18n="Info.sensor.temp"></th>
+                        <td>
+                            <span data-cfg="sensor_temp_c"></span>°C
+                        </td>
+                    </tr>
+                    <tr>
+                        <th data-i18n="Info.sensor.hum"></th>
+                        <td>
+                            <span data-cfg="sensor_hum"></span>%
+                        </td>
+                    </tr>
+                    <tr>
+                        <th data-i18n="Info.sensor.dew"></th>
+                        <td>
+                            <span data-cfg="sensor_dew_c"></span>°C
+                        </td>
+                    </tr>
+                    <tr>
+                        <th data-i18n="Info.sensor.abs_hum"></th>
+                        <td>
+                            <span data-cfg="sensor_abs_hum"></span> g/m³
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

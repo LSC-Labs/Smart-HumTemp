@@ -3,7 +3,7 @@
  */
 const APP_SETTINGS = {
     "@Default": "P.Liebl",
-    "DefaultPage" : "Status",              // Page to be loaded on initialization
+    "DefaultPage" : "Info",              // Page to be loaded on initialization
 
     /**
      * "app":
@@ -14,7 +14,7 @@ const APP_SETTINGS = {
      */
     "app": {
         "prog_name":"Smart-HumTemp",
-        "prog_ver":"2.2.0",
+        "prog_ver":"2.3.0",
         "prog_copy": "(c) 2025 LSC-Labs",
         "logLevel": 5,                          // Log Level for the web application (0..7)
         "ws": {
@@ -198,6 +198,10 @@ const APP_SETTINGS = {
      */
     "menu":        [
         { 
+            "name": "Info",
+            "icon": "Thermo"
+        },
+        { 
             "name": "Status",
             "icon": "Status"
         },
@@ -225,6 +229,7 @@ const APP_SETTINGS = {
         },
     ]    
 }
+
 
 
 

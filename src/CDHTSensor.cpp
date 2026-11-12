@@ -185,6 +185,7 @@ void CDHTSensor::insertComponentDiscovery(const char * pszComponentName,JsonNode
     insertHASensorComponent(oComponents, pszComponentName, Status.SENSOR_STATUS_TEMPC,      "temperature", "°C");
     insertHASensorComponent(oComponents, pszComponentName, Status.SENSOR_STATUS_DEWPOINT_C, "temperature", "°C",
                             Config.strHADewPointName.c_str(), "mdi:water-thermometer-outline");
+    insertHASensorComponent(oComponents, pszComponentName, Status.SENSOR_STATUS_ABS_HUMIDITY, "absolute_humidity", "g/m³");
 }
 
 
@@ -384,6 +385,19 @@ float CDHTSensor::calculateDewPoint(float fTemp, float fHumidity, bool bAsFarenh
     return { bAsFarenheit ? LSC::getFarenheitFromCelsius(tt) : tt }; 
 }
 
+/// @brief Absolute humidity (water vapour density) - Magnus formula
+/// @param fTempC Temperature in Celsius
+/// @param fHumidity Relative humidity in %
+/// @return Absolute humidity in g/m³
+float CDHTSensor::calculateAbsoluteHumidity(float fTempC, float fHumidity) {
+    // Saturation vapour pressure in hPa
+    float fSatPressure = 6.112f * expf((17.67f * fTempC) / (fTempC + 243.5f));
+    // Vapour pressure in hPa
+    float fVapPressure = fSatPressure * (fHumidity / 100.0f);
+    // Water vapour density: 216.74 = 100 (hPa -> Pa) * M(water) 18.016 g/mol / R 8.314 J/(mol K)
+    return(216.74f * fVapPressure / (273.15f + fTempC));
+}
+
 /// @brief Updates Temp and Humidity, calculates the Dew Point and sends the
 ///        SensorStatus object via the message bus.
 float CDHTSensor::getDewPoint(bool bInFarenheit) {
@@ -396,6 +410,7 @@ float CDHTSensor::getDewPoint(bool bInFarenheit) {
             if(!isnan(Status.TempC) && !isnan(Status.Humidity)) {
                 Status.DewPoint = calculateDewPoint(Status.TempC,Status.Humidity,bInFarenheit);
                 fResult = Status.DewPoint; 
+                Status.AbsHumidity = calculateAbsoluteHumidity(Status.TempC,Status.Humidity);
             }
             Appl.MsgBus.sendEvent(this,MSG_SENSOR_STATUS,&Status,Status.SensorLocation);
             m_oUpdateDelay.restart();

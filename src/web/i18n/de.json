@@ -98,6 +98,13 @@
       "type": "Client",
       "desc": "SSID des WLANs, drücken Sie 'Suchen' um WLANs in der Nähe zu finden."
     },
+    "phymode": {
+      "info": "WLAN-Standard (nur ESP8266). 802.11g vermeidet Abstürze im ESP8266-SDK, wenn der Router seine 11n-Einstellungen ändert (z.B. Kanalbreite, Mesh). Wird nach einem Neustart aktiv.",
+      "label": "WLAN-Standard",
+      "n": "802.11b/g/n",
+      "g": "802.11b/g (stabiler)",
+      "b": "802.11b"
+    },
     "legend": "WLAN Einstellungen"
   },
   "MQTT": {
@@ -187,10 +194,10 @@
   },
   "Status": {
     "panel": {
+      "dewpoint": "Taupunkt Schalter",
       "device": "Gerät",
       "network": "Netzwerk",
-      "mqtt": "Message Broker",
-      "dewpoint": "Taupunkt Schalter"
+      "mqtt": "Message Broker"
     },
     "fan": {
       "active": "Lüfter aktiv"
@@ -203,12 +210,14 @@
     "legend": "Status - $(prog_name) Ver.: $(prog_ver)",
     "hostname": "Systemname",
     "uptime": "Laufzeit",
+    "resetReason": "Letzter Neustart",
     "flashSize": "Größe des Flash",
     "sketchSize": "Größe des Sketches",
-    "flashUsage": "Speichernutzung",
+    "flashUsage": "Programmspeicher",
     "battery": "Batterie",
     "ssid": "SSID",
     "rssi": "Signal Stärke",
+    "phymode": "WLAN-Standard",
     "ip": "IP Adresse",
     "gateway": "Gateway Adresse",
     "netmask": "Netzwerk Maske",
@@ -216,11 +225,17 @@
     "mac": "MAC Adresse",
     "enabled": "Aktiviert",
     "connected": "Verbunden",
-    "lastConStart": "Sart der Verbindung",
+    "lastConStart": "Start der Verbindung",
     "lastConLost": "Ende der letzten Verbindung",
     "disconReason": "Ursache des Abbruchs",
-    "memOK": "$(sketch_size) Kb genutzt von $(flash_available) Kb => $(flash_used_percent)%",
-    "memWarn": "Zu wenig Speicher für einen OTA Update! $(flash_used_percent)% genutzt."
+    "memOK": "Sketch $(sketch_kb) KB von $(sketch_area_kb) KB ($(flash_used_percent)%) - OTA Update möglich (bis $(sketch_free_kb) KB)",
+    "memWarn": "Zu wenig Speicher für ein OTA Update! Sketch $(sketch_kb) KB, frei nur $(sketch_free_kb) KB.",
+    "fsUsage": "Dateisystem",
+    "heap": "Arbeitsspeicher",
+    "fsOK": "$(fs_used_kb) KB von $(fs_total_kb) KB belegt ($(fs_used_percent)%)",
+    "fsWarn": "Dateisystem fast voll! $(fs_used_kb) KB von $(fs_total_kb) KB belegt ($(fs_used_percent)%)",
+    "heapInfo": "$(heap_free_kb) KB frei (min. $(heap_min_kb) KB), größter Block $(heap_block_kb) KB, Fragmentierung $(heap_frag)%",
+    "heapWarn": "Wenig freier Arbeitsspeicher oder starke Fragmentierung - Neustarts möglich!"
   },
   "Sensor": {
     "adjust_t": {
@@ -276,6 +291,18 @@
     },
     "title": "Neustart oder Reset",
     "desc": "Starten des Gerätes oder zurücksetzen auf Werkseinstellungen"
+  },
+  "Info": {
+    "panel": {
+      "sensor": "Sensor"
+    },
+    "sensor": {
+      "temp": "Temperatur",
+      "hum": "Luftfeuchtigkeit",
+      "dew": "Taupunkt",
+      "abs_hum": "Absolute Feuchte"
+    },
+    "legend": "Aktuelle Werte - $(prog_name)"
   },
   "_language": "Deutsch"
 }

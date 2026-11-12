@@ -32,7 +32,210 @@
 
         "val-IP":"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
     }
-</VarTable> <!-- 
+</VarTable> <!--
+    Info page - current measurement values of the sensor.
+    The device status (heap, network, MQTT...) is shown by the Status page of PLibESPV1.
+    The values are read from apiV1/status (node "sensor") and refreshed every 5 seconds.
+-->
+<div id="InfoPage">
+    <!-- Current values of $(prog_name) Ver.: $(prog_ver) -->
+    <legend data-i18n="Info.legend"></legend>
+
+    <div class="row text-center">
+        <div class="col-md-8 col-md-offset-2">
+            <!-- Sensor values -->
+            <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <caption data-i18n="Info.panel.sensor"></caption>
+                    <tr>
+                        <th data-i18n="Info.sensor.temp"></th>
+                        <td>
+                            <span data-cfg="sensor_temp_c"></span>°C
+                        </td>
+                    </tr>
+                    <tr>
+                        <th data-i18n="Info.sensor.hum"></th>
+                        <td>
+                            <span data-cfg="sensor_hum"></span>%
+                        </td>
+                    </tr>
+                    <tr>
+                        <th data-i18n="Info.sensor.dew"></th>
+                        <td>
+                            <span data-cfg="sensor_dew_c"></span>°C
+                        </td>
+                    </tr>
+                    <tr>
+                        <th data-i18n="Info.sensor.abs_hum"></th>
+                        <td>
+                            <span data-cfg="sensor_abs_hum"></span> g/m³
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!--
+    Status page (PLibESPV1)
+
+    Shows the device, memory, battery (if available), network and message broker status.
+    The values are read from apiV1/status and apiV1/sysstatus (see WebRoutes.cpp)
+    and refreshed every 5 seconds while the page is shown.
+    The menu entry "Status" is part of the default menu (settings.js).
+-->
+<div id="StatusPage">
+    <!-- Status of $(prog_name) Ver.: $(prog_ver) -->
+    <legend data-i18n="Status.legend"></legend>
+
+    
+    <div class="row text-center">
+        <div class="col-md-8 col-md-offset-2">
+
+            <!-- Device Status Table -->
+            <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    
+                    <caption data-i18n="Status.panel.device"></caption>
+                    <tr>
+                        <!-- system/host name -->
+                        <th data-i18n="Status.hostname"></th>
+                        <td data-cfg="wifi_hostname"></td>
+                    </tr>
+                    <tr>
+                        <!-- uptime -->
+                        <th data-i18n="Status.uptime"></th>
+                        <td data-cfg="uptime"></td>
+                    </tr>
+                    <tr>
+                        <!-- reason of the last reset (exception, watchdog...) -->
+                        <th data-i18n="Status.resetReason"></th>
+                        <td data-cfg="reset_reason"></td>
+                    </tr>
+                    <tr>
+                         <!-- Flash size -->
+                        <th data-i18n="Status.flashSize"></th>
+                        <td >
+                            <span data-cfg="flash_size"></span> Bytes
+                        </td>
+                    </tr>
+                    <tr>
+                         <!-- sketch size -->
+                        <th data-i18n="Status.sketchSize"></th>
+                        <td >
+                            <span data-cfg="sketch_size"></span> Bytes
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Program memory: sketch in relation to the sketch area (sketch + free OTA space) -->
+                        <th data-i18n="Status.flashUsage"></th>
+                        <td>
+                            <div class="progressBar">
+                                <div id="flashUsage" class="usageStatus usageOK"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Heap: free / largest block / fragmentation -->
+                        <th data-i18n="Status.heap"></th>
+                        <td id="heapUsage"></td>
+                    </tr>
+                    <tr>
+                        <!-- File system usage -->
+                        <th data-i18n="Status.fsUsage"></th>
+                        <td id="fsUsage"></td>
+                    </tr>
+                    <tr id="batteryRow" style="display:none">
+                        <!-- Battery voltage - only shown, if a battery is available (bat_available) -->
+                        <th data-i18n="Status.battery"></th>
+                        <td><span data-cfg="bat_volt"></span> V</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Network and WiFi Status Table-->
+            <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <!-- Network -->
+                    <caption data-i18n="Status.panel.network"></caption>
+                    <tr>
+                        <!-- SSID of the current network -->
+                        <th data-i18n="Status.ssid"></th>
+                        <td data-cfg="wifi_ssid"></td>
+                    </tr>
+                    <tr>
+                        <!-- Signal strength in rssi -->
+                        <th data-i18n="Status.rssi" ></th>
+                        <td><span data-cfg="wifi_rssi"></span> dB</td>
+                    </tr>
+                    <tr>
+                        <!-- WiFi standard (PHY mode) -->
+                        <th data-i18n="Status.phymode"></th>
+                        <td>802.11<span data-cfg="wifi_phymode"></span></td>
+                    </tr>
+                    <tr>
+                        <!-- IP address of the device -->
+                        <th data-i18n="Status.ip"></th>
+                        <td data-cfg="wifi_ip"></td>
+                    </tr>
+                    <tr>
+                        <!-- Gateway address -->
+                        <th data-i18n="Status.gateway"></th>
+                        <td data-cfg="wifi_gateway"></td>
+                    </tr>
+                    <tr>
+                        <!-- Network mask -->
+                        <th data-i18n="Status.netmask"></th>
+                        <td data-cfg="wifi_netmask"></td>
+                    </tr>
+                    <tr>
+                        <!-- DNS server address -->
+                        <th data-i18n="Status.dns"></th>
+                        <td data-cfg="wifi_dns"></td>
+                    </tr>
+                    <tr>
+                        <!-- MAC address -->
+                        <th data-i18n="Status.mac"></th>
+                        <td data-cfg="wifi_mac"></td>
+                    </tr>
+                </table> 
+            </div>
+            
+            <!-- Message Broker Status Table -->
+            <div class="panel panel-default table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <!-- MQTT -->
+                    <caption data-i18n="Status.panel.mqtt"></caption>
+                    <tr>
+                        <!-- Enabled -->
+                        <th data-i18n="Status.enabled"></th>
+                        <td data-cfg="mqtt_isEnabled"></td>
+                    </tr>
+                    <tr>
+                        <!-- Connected -->
+                        <th data-i18n="Status.connected"></th>
+                        <td data-cfg="mqtt_isConnected"></td>
+                    </tr>
+                    <tr>
+                        <!-- Last connection start -->
+                        <th data-i18n="Status.lastConStart"></th>
+                        <td data-cfg="mqtt_started"></td>
+                    </tr>
+                    <tr>
+                        <!-- Last connection lost -->
+                        <th data-i18n="Status.lastConLost"></th>
+                        <td data-cfg="mqtt_disconTS"></td>
+                    </tr>
+                    <tr>
+                        <!-- Disconnection reason -->
+                        <th data-i18n="Status.disconReason"></th>
+                        <td data-cfg="mqtt_disconReason"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div><!-- 
     System page 
 -->
 <div id="SystemPage" data-menu='{"name":"Maintenance|System","title":"System","icon":"System","attr": { "data-auth":"1"} }'>
@@ -180,6 +383,21 @@
                 </label>
             </form>
         </div>
+    </div>
+
+    <!-- PHY mode (Station mode only, ESP8266) -->
+    <div class="row form-group" data-viewon="ap_mode=0" data-auth="RO">
+        <label class="$(col-label-class) info-icon" data-i18n="@title:WiFi.phymode.info">
+            <span data-i18n="WiFi.phymode.label"></span>
+            <icon data-icon="Info"></icon>
+        </label>
+        <span class="$(col-input-class)">
+            <select class="form-control input-sm" name="phymode">
+                <option value="n" data-i18n="WiFi.phymode.n"></option>
+                <option value="g" data-i18n="WiFi.phymode.g"></option>
+                <option value="b" data-i18n="WiFi.phymode.b"></option>
+            </select>
+        </span>
     </div>
 
    
@@ -523,172 +741,6 @@
         <div class="row actionPanel" > 
             <div class="text-right"><a id="fwReleasePageLink" class="isHidden" href="#" target="_blank" data-i18n="Firmware.releasePage"></a></div>
             <div id="fwHistory">
-            </div>
-        </div>
-    </div>
-</div><!-- 
-    Status - Page for Dew Point Switch
--->
-<div id="StatusPage">
-    <!-- Status of $(prog_name) Ver.: $(prog_ver) -->
-    <legend data-i18n="Status.legend"></legend>
-
-    
-    <div class="row text-center">
-        <div class="col-md-8 col-md-offset-2">
-
-            <!-- Device Status Table -->
-            <div class="panel panel-default table-responsive">
-                <table class="table table-hover table-striped table-condensed">
-                    
-                    <caption data-i18n="Status.panel.device"></caption>
-                    <tr>
-                        <!-- system/host name -->
-                        <th data-i18n="Status.hostname"></th>
-                        <td data-cfg="wifi_hostname"></td>
-                    </tr>
-                    <tr>
-                        <!-- uptime -->
-                        <th data-i18n="Status.uptime"></th>
-                        <td data-cfg="uptime"></td>
-                    </tr>
-                     <tr>
-                        <!-- Flash size -->
-                        <th data-i18n="Status.flashSize"></th>
-                        <td >
-                            <span data-cfg="flash_size"></span> Bytes
-                        </td>
-                    </tr>
-                     <tr>
-                        <!-- sketch size -->
-                        <th data-i18n="Status.sketchSize"></th>
-                        <td >
-                            <span data-cfg="sketch_size"></span> Bytes
-                        </td>
-                    </tr>
-                    <tr>
-                        <!-- Flash usage -->
-                        <th data-i18n="Status.flashUsage"></th>
-                        <td>
-                            <div class="progressBar">
-                                <div id="flashUsage" class="usageStatus usageOK" title="Warning - too less memory"></div>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- Battery not available -->
-                    <!--
-                    <tr>
-                        
-                        <th data-i18n="Status.battery" ></th>
-                        <td ><span data-cfg="bat_power"></span> V</td>
-                    </tr>
-                    -->
-
-                </table>
-            </div>
-
-            <!-- Sample from Dew Point Switch - insert your status here -->
-            <!-- Dew Point Switch Status Table -->
-            <div class="panel panel-default table-responsive">
-                <table class="table table-hover table-striped table-condensed">
-                    <!-- Dew Point -->
-                    <caption data-i18n="Status.panel.sensor"></caption>
-                    <tr>
-                        <!-- sensor Indoor -->
-                        <th data-i18n="Status.sensor.temp"></th>
-                        <td>
-                            <span data-cfg="sensor_temp_c"></span>°C
-                        </td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="Status.sensor.hum"></th>
-                        <td>
-                            <span data-cfg="sensor_hum"></span>%
-                        </td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="Status.sensor.dew"></th>
-                        <td>
-                            <span data-cfg="sensor_dew_point"></span>°C
-                        </td>
-                    </tr> 
-                </table>
-            </div>
-
-            <!-- Network and WiFi Status Table-->
-            <div class="panel panel-default table-responsive">
-                <table class="table table-hover table-striped table-condensed">
-                    <!-- Network -->
-                    <caption data-i18n="Status.panel.network"></caption>
-                    <tr>
-                        <!-- SSID of the current network -->
-                        <th data-i18n="Status.ssid"></th>
-                        <td data-cfg="wifi_ssid"></td>
-                    </tr>
-                    <tr>
-                        <!-- Signal strength in rssi -->
-                        <th data-i18n="Status.rssi" ></th>
-                        <td><span data-cfg="wifi_rssi"></span> dB</td>
-                    </tr>
-                    <tr>
-                        <!-- IP address of the device -->
-                        <th data-i18n="Status.ip"></th>
-                        <td data-cfg="wifi_ip"></td>
-                    </tr>
-                    <tr>
-                        <!-- Gateway address -->
-                        <th data-i18n="Status.gateway"></th>
-                        <td data-cfg="wifi_gateway"></td>
-                    </tr>
-                    <tr>
-                        <!-- Network mask -->
-                        <th data-i18n="Status.netmask"></th>
-                        <td data-cfg="wifi_netmask"></td>
-                    </tr>
-                    <tr>
-                        <!-- DNS server address -->
-                        <th data-i18n="Status.dns"></th>
-                        <td data-cfg="wifi_dns"></td>
-                    </tr>
-                    <tr>
-                        <!-- MAC address -->
-                        <th data-i18n="Status.mac"></th>
-                        <td data-cfg="wifi_mac"></td>
-                    </tr>
-                </table> 
-            </div>
-            
-            <!-- Message Broker Status Table -->
-            <div class="panel panel-default table-responsive">
-                <table class="table table-hover table-striped table-condensed">
-                    <!-- MQTT -->
-                    <caption data-i18n="Status.panel.mqtt"></caption>
-                    <tr>
-                        <!-- Enabled -->
-                        <th data-i18n="Status.enabled"></th>
-                        <td data-cfg="mqtt_isEnabled"></td>
-                    </tr>
-                    <tr>
-                        <!-- Connected -->
-                        <th data-i18n="Status.connected"></th>
-                        <td data-cfg="mqtt_isConnected"></td>
-                    </tr>
-                    <tr>
-                        <!-- Last connection start -->
-                        <th data-i18n="Status.lastConStart"></th>
-                        <td data-cfg="mqtt_started"></td>
-                    </tr>
-                    <tr>
-                        <!-- Last connection lost -->
-                        <th data-i18n="Status.lastConLost"></th>
-                        <td data-cfg="mqtt_disconTS"></td>
-                    </tr>
-                    <tr>
-                        <!-- Disconnection reason -->
-                        <th data-i18n="Status.disconReason"></th>
-                        <td data-cfg="mqtt_disconReason"></td>
-                    </tr>
-                </table>
             </div>
         </div>
     </div>

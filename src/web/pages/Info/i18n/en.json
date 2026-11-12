@@ -1,0 +1,14 @@
+{
+    "Info": {
+        "legend": "Current values - $(prog_name)",
+        "panel" : {
+            "sensor": "Sensor"
+        },
+        "sensor": {
+            "temp": "Temperature",
+            "hum" : "Humidity",
+            "dew" : "Dew point",
+            "abs_hum": "Absolute humidity"
+        }
+    }
+}

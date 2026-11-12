@@ -23,6 +23,7 @@ struct DHTStatus {
     const char * SENSOR_STATUS_TEMPF_RAW     = "temp_f_raw";
     const char * SENSOR_STATUS_HUMIDITY_RAW  = "hum_raw";
     const char * SENSOR_STATUS_DEWPOINT_C    = "dew_c";
+    const char * SENSOR_STATUS_ABS_HUMIDITY  = "abs_hum";
     const char * SENSOR_STATUS_LAST_UPD_MS   = "last_upd_ms";
     const char * SENSOR_STATUS_MONITORING    = "active";
     const char * SENSOR_STATUS_LOCATION      = "loc";
@@ -35,6 +36,7 @@ struct DHTStatus {
     float TempF         = NAN;
     float Humidity      = NAN;
     float DewPoint      = NAN;
+    float AbsHumidity   = NAN;      // absolute humidity in g/m³
     int           SensorLocation = -1;
     unsigned long LastWeatherCallMillis = 0;
     unsigned long LastSensorReadMillis  = 0;
@@ -49,6 +51,7 @@ struct DHTStatus {
         oStatus.setValue(SENSOR_STATUS_TEMPF,       TempF);
         oStatus.setValue(SENSOR_STATUS_HUMIDITY,    Humidity);
         oStatus.setValue(SENSOR_STATUS_DEWPOINT_C,    DewPoint);
+        oStatus.setValue(SENSOR_STATUS_ABS_HUMIDITY,  AbsHumidity);
         if(nLevel >= STATUS_LEVEL_VERBOSE) {
             oStatus.setValue(SENSOR_STATUS_TEMPC_RAW, TempRawC);
             oStatus.setValue(SENSOR_STATUS_TEMPF_RAW, TempRawF);
@@ -119,6 +122,7 @@ class CDHTSensor : public IModule, public IHomeAssistantComponent { //  : IConfi
         float getHumidity();
         float getDewPoint(bool bInFarenheit = false);
         float calculateDewPoint(float fTemp, float fHum, bool bInFarenheit = false);
+        float calculateAbsoluteHumidity(float fTempC, float fHum);
         bool  isInternetAvailable();
         // Home Assistant Component Interface implementation (if used)
 //        void insertComponentDiscovery(const char * pszComponentName, JsonObject & oComponentArea) override;

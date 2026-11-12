@@ -1,7 +1,7 @@
 {
     "DebugMode": true,
     "prog_name": "Smart-HumTemp",
-    "prog_version": "2.2.0.0-T",
+    "prog_version": "2.3.0.0-T",
     "uptime": "00:00:02",
     "starttime": 78,
     "now": 2325,
@@ -55,7 +55,8 @@
         "temp_f_raw": 69.8,
         "hum": 64,
         "hum_raw": 64,
-        "dew_point": 13.93291,
+        "dew_c": 13.93291,
+        "abs_hum": 11.72,
         "last_upd_ms": 0
     },
     "sensorOD": {
@@ -66,7 +67,8 @@
         "temp_f_raw": 72.8,
         "hum": 30,
         "hum_raw": 30,
-        "dew_point": 17.9,
+        "dew_c": 17.9,
+        "abs_hum": 6.91,
         "last_upd_ms": 0,
         "internet": false
     },

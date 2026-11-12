@@ -8,7 +8,7 @@ Smart-HumTemp reads a DHT sensor (or, alternatively, the OpenWeatherMap API), ca
 
 ## Features
 
-- 🌡️ **Temperature, humidity and dew point** – from a DHT11 / DHT21 / DHT22 sensor
+- 🌡️ **Temperature, humidity, dew point and absolute humidity** – from a DHT11 / DHT21 / DHT22 sensor
 - ☁️ **OpenWeatherMap as virtual sensor** – use outdoor weather data instead of a physical sensor
 - 🎯 **Calibration** – offsets for temperature and humidity, configurable in the web UI
 - 🖥️ **OLED display** (SH1106, 128×64) – start logo, access point info, large temperature and humidity pages
@@ -87,6 +87,7 @@ The following entities are created:
 | Temperature | `temperature` | °C | long-term statistics enabled |
 | Humidity | `humidity` | % | long-term statistics enabled |
 | Dew point | `temperature` | °C | name can be changed in the configuration |
+| Absolute humidity | `absolute_humidity` | g/m³ | water content of the air – useful to decide whether ventilating helps |
 | WiFi signal | `signal_strength` | dBm | diagnostic entity |
 
 Home Assistant converts the temperature to °F automatically, if your system uses imperial units.
@@ -95,7 +96,7 @@ Home Assistant converts the temperature to °F automatically, if your system use
 
 | Topic | Content |
 |-------|---------|
-| `<prefix>/state` | JSON with the current sensor values (e.g. `{"sensor":{"temp_c":21.3,"hum":54.2,"dew_c":11.6}}`) |
+| `<prefix>/state` | JSON with the current sensor values (e.g. `{"sensor":{"temp_c":21.3,"hum":54.2,"dew_c":11.6,"abs_hum":10.1}}`) |
 | `<prefix>/status` | Availability: `online` / `offline` (retained, last will) |
 | `<prefix>/info` | Periodic heartbeat with device status (default every 60 s) |
 | `<prefix>/cmd/#` | Commands to the device |

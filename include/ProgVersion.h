@@ -9,9 +9,9 @@
 #define PROG_HOMEPAGE      "https://github.com/lsc-labs/Smart-HumTemp#readme"
 
 #define PROG_VERSION_MAJOR 2
-#define PROG_VERSION_MINOR 2
+#define PROG_VERSION_MINOR 3
 #define PROG_VERSION_PATCH 0
 #define PROG_VERSION_BUILD 5
-#define PROG_VERSION       "2.2.0"
-#define PROG_VERSION_SHORT "2.2"
-#define PROG_VERSION_LONG  "2.2.0.5"
+#define PROG_VERSION       "2.3.0"
+#define PROG_VERSION_SHORT "2.3"
+#define PROG_VERSION_LONG  "2.3.0.5"

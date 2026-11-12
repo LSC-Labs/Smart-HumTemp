@@ -127,22 +127,22 @@ void setup() {
   
   // If button is pressed during startup, do not load config (to allow recovery)
   // bool bUseConfigData = !oBtn.isPressed();
-  bool bUseConfigData = true;
-  if(bUseConfigData) Appl.readConfigFrom(CONFIG_FILE);
+  bool bUseConfigData = Appl.readConfigFrom(CONFIG_FILE);
 
-  
-  // Show some diagnostic info on the serial bus 
+  // Show some diagnostic info on the serial bus
   Appl.printDiag();
   ApplLogInfo(F("Initializing services..."));
- 
-  // Initialize and start the WiFi
-  oWiFiController.startWiFi(bUseConfigData);
 
-  // Setup the web server and the web socket...
-  // enable registerWebRoutes if you have custom web routes (WebRoutes.cpp/h)
-  registerWebRoutes(oWebServer);  
+  // Register the web routes BEFORE the WiFi is started: the server is started on
+  // MSG_WIFI_CONNECTED - requests (i.e. network scanners) must not hit a server,
+  // whose routes are still being registered.
+  ApplLogInfo(F("..initializing web"));
+  registerWebRoutes(oWebServer);
   oWebServer.addHandler(&oWebSocket);
-  oWebServer.begin();
+
+  // Initialize and start the WiFi and the web server
+  oWiFiController.startWiFi(bUseConfigData);
+  oWebServer.begin();         // ignored, if already started by MSG_WIFI_CONNECTED
 
   if(oWiFiController.Status.isInAccessPointMode) {
     delay(500);
