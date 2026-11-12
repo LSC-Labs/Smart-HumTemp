@@ -140,41 +140,51 @@ int CDHTSensor::receiveEvent(const void * pSender, int nMsg, const void * pData,
 // Messages for Home Assistance
 // -> https://github.com/home-assistant/core/blob/dev/homeassistant/components/mqtt/abbreviations.py
 // -> https://www.home-assistant.io/integrations/mqtt
+//
+// Abbreviated keys are used to keep the discovery document small (heap on ESP8266):
+//   p = platform, dev_cla = device_class, stat_cla = state_class, unit_of_meas = unit_of_measurement,
+//   val_tpl = value_template, uniq_id = unique_id, sug_dsp_prc = suggested_display_precision, ic = icon
+//
+// Values that are NAN are not written into the state (see DHTStatus::writeStatusTo()).
+// The template therefore checks "is defined" and renders "None" => HA shows the entity as "unknown"
+// instead of logging template errors (and storing wrong values in the statistics).
+static void insertHASensorComponent(JsonNode & oComponents,
+                                    const char * pszComponentName,
+                                    const char * pszValueKey,
+                                    const char * pszDeviceClass,
+                                    const char * pszUnit,
+                                    const char * pszName = nullptr,
+                                    const char * pszIcon = nullptr) {
+    char szValueTemplate[192];
+    snprintf(szValueTemplate,sizeof(szValueTemplate),
+             "{{ value_json.%s.%s | float | round(2) if value_json.%s.%s is defined else None }}",
+             pszComponentName, pszValueKey, pszComponentName, pszValueKey);
+    String strUniqueID = Appl.getDeviceID();
+    strUniqueID += "-";
+    strUniqueID += pszValueKey;
+
+    JsonNode * pSensor = oComponents.getObject(pszValueKey,true);
+    if(!pSensor) return;
+    pSensor->setValue("p",              "sensor");
+    pSensor->setValue("dev_cla",        pszDeviceClass);
+    pSensor->setValue("stat_cla",       "measurement");     // required for long term statistics / history graphs
+    pSensor->setValue("unit_of_meas",   pszUnit);
+    pSensor->setValue("sug_dsp_prc",    1);
+    pSensor->setValue("val_tpl",        szValueTemplate);
+    pSensor->setValue("uniq_id",        strUniqueID.c_str());
+    // Without a name HA uses the translated device class name ("Temperature", "Humidity")
+    if(pszName && *pszName) pSensor->setValue("name", pszName);
+    if(pszIcon && *pszIcon) pSensor->setValue("ic",   pszIcon);
+}
+
 void CDHTSensor::insertComponentDiscovery(const char * pszComponentName,JsonNode & oComponents, CMQTTController *pController) {
-    const char szValueSelectorFmt[] = "{{ value_json.%s.%s | float | round(2)}}";
-    char szValueSelector[128];
-    String strCompID;
-    strCompID = Appl.getDeviceID();
-    strCompID += "-hum";
-    snprintf(szValueSelector,sizeof(szValueSelector),"{{ value_json.%s.hum }}",pszComponentName);
-    JsonNode * pHumSensor = oComponents.getObject("hum",true);
-    pHumSensor->setValue("p",                   "sensor");
-    pHumSensor->setValue("device_class",        "humidity");
-    pHumSensor->setValue("unit_of_measurement", "%");
-    pHumSensor->setValue("value_template" ,     szValueSelector);
-    pHumSensor->setValue("unique_id",           strCompID.c_str());
-
-    strCompID = Appl.getDeviceID();
-    strCompID += "-temp_c";
-    snprintf(szValueSelector,sizeof(szValueSelector),szValueSelectorFmt,pszComponentName,"temp_c");
-    JsonNode * pTempSensor = oComponents.getObject("temp_c",true);
-    pTempSensor->setValue("p",                  "sensor");
-    pTempSensor->setValue("device_class",       "temperature");
-    pTempSensor->setValue("unit_of_measurement","°C");
-    pTempSensor->setValue("value_template",     szValueSelector);
-    pTempSensor->setValue("unique_id",          strCompID.c_str());
-
-    strCompID = Appl.getDeviceID();
-    strCompID += "-dew_c";
-    snprintf(szValueSelector,sizeof(szValueSelector),szValueSelectorFmt,pszComponentName,"dew_c");
-    JsonNode * oDewSensor = oComponents.getObject("dew_c",true);
-    oDewSensor->setValue("p",                   "sensor");
-    oDewSensor->setValue("device_class",        "temperature");
-    oDewSensor->setValue("unit_of_measurement", "°C");
-    oDewSensor->setValue("value_template",      szValueSelector);
-    oDewSensor->setValue("unique_id",           strCompID.c_str());
-    oDewSensor->setValue("icon","mdi:water-thermometer-outline");
-    oDewSensor->setValue("name",Config.strHADewPointName.c_str());
+    (void) pController;
+    if(!pszComponentName || !*pszComponentName) return;
+    // Keys must match DHTStatus (SENSOR_STATUS_HUMIDITY / _TEMPC / _DEWPOINT_C)
+    insertHASensorComponent(oComponents, pszComponentName, Status.SENSOR_STATUS_HUMIDITY,   "humidity",    "%");
+    insertHASensorComponent(oComponents, pszComponentName, Status.SENSOR_STATUS_TEMPC,      "temperature", "°C");
+    insertHASensorComponent(oComponents, pszComponentName, Status.SENSOR_STATUS_DEWPOINT_C, "temperature", "°C",
+                            Config.strHADewPointName.c_str(), "mdi:water-thermometer-outline");
 }
 
 
