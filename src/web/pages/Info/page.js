@@ -59,11 +59,27 @@ class CInfoPage extends CPageHandler {
             for(let strName in oStatus) {
                 let oData = oStatus[strName];
                 if(oData && Utils.isObj(oData)) {
+                    if(strName == "sensor") oData = this.formatSensorValues(oData);
                     this.setConfigValues(pView,oData,strName);
                 }
             }
         }
         pView.translate();
         return(oStatus);
+    }
+
+    /**
+     * Returns a copy of the sensor status with the measurement values rounded
+     * to one decimal place (the device status itself is not modified).
+     * @param {object} oSensor sensor node of the device status
+     * @returns {object} formatted copy
+     */
+    formatSensorValues(oSensor) {
+        let oResult = Object.assign({}, oSensor);
+        ["temp_c", "hum", "dew_c", "abs_hum"].forEach(strKey => {
+            let fValue = parseFloat(oResult[strKey]);
+            if(!isNaN(fValue)) oResult[strKey] = fValue.toFixed(1);
+        });
+        return(oResult);
     }
 }

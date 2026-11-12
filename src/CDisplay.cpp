@@ -54,16 +54,27 @@ CDisplay::CDisplay() :
  * wait about 300ms from power on... so display is up an running...
  */
 void CDisplay::init(int nI2CAddress, bool bResetPin) {
-    // millis is 0 when device is switched on
-    while(millis() < 300) {
-        begin(nI2CAddress,bResetPin);
+    // The display needs ~300ms after power on (millis is 0 when the device is switched on).
+    // Wait for the rest of the time - begin() must be called in any case, it allocates
+    // the frame buffer. Before, begin() was only called while millis() < 300 - on a later
+    // call the buffer stayed NULL and clearDisplay() crashed (Exception 29, memset to NULL).
+    unsigned long ulNow = millis();
+    if(ulNow < 300) delay(300 - ulNow);
+
+    // begin() allocates a new I2C device on every call - retry only a few times
+    for(int nTry = 0; nTry < 3 && !m_bIsInitialized; nTry++) {
+        if(nTry > 0) delay(100);
+        m_bIsInitialized = begin(nI2CAddress,bResetPin);
+    }
+    if(!m_bIsInitialized) {
+        ApplLogWarnWithParms(F("Display not available (I2C address 0x%02x) - display disabled"),nI2CAddress);
+        return;
     }
     // In Debug Mode - show start panel from vendor for a second...
     #ifdef DEBUGINFOS
         display();
         delay(100);
     #endif
-    m_bIsInitialized = true;
     delay(100);
     clearDisplay();
     // Activate the start page, if it is in place...
@@ -227,14 +238,14 @@ IDisplayPage * CDisplay::findPage(String &strName) {
 }
 
 void CDisplay::hideCurrentPage() {
-    if(m_pCurrentPage != nullptr) m_pCurrentPage->hide(this);
+    if(m_bIsInitialized && m_pCurrentPage != nullptr) m_pCurrentPage->hide(this);
 }
 
 /**
  * Refresh the content of the page, respecting the refresh timer....
  */
 void CDisplay::refreshCurrentPage(bool bForce) {
-    if(m_pCurrentPage != nullptr) {
+    if(m_bIsInitialized && m_pCurrentPage != nullptr) {
         if(bForce || m_oPageRefreshDelay.isDone()) {
             m_pCurrentPage->show(this);
             m_oPageRefreshDelay.next();
@@ -354,6 +365,8 @@ bool CDisplay::activateNextPage(PageType eType) {
  * Dispatcher, will be called in each loop...
  */
 void CDisplay::dispatch() {
+    // No display (not found / no frame buffer) - nothing to draw
+    if(!m_bIsInitialized) return;
     // Power off configured and reached ?
     if(!m_bFreezePage) {
         if(!Config.AlwaysOn) {
