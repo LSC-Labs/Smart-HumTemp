@@ -29,15 +29,15 @@ class IDisplayPage
 class CDisplayPage : public IDisplayPage {
 
     protected:
-        String      m_strName;
+        // RAM: the name is not copied - it must be a persistent string (i.e. a literal)
+        const char *m_pszName;
+        unsigned long m_ulRefreshTime = 500;
         PageType    m_eType;
         bool isActive = false;
-        unsigned long m_ulRefreshTime = 500;
         
     public:
-        CDisplayPage(String &strName,       PageType eType = PageType::LOOP, unsigned long ulRefreshTime = 500);
         CDisplayPage(const char *pszName,   PageType eType = PageType::LOOP, unsigned long ulRefreshTime = 500);
-        const char *    getName() { return(m_strName.c_str()); };
+        const char *    getName() { return(m_pszName); };
         PageType        getType() { return(m_eType); };
         void            setRefreshTime(unsigned long ulTime) { m_ulRefreshTime = ulTime; }
         unsigned long   getRefreshTime() { return(m_ulRefreshTime); }

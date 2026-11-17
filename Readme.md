@@ -1,6 +1,6 @@
 # Smart-HumTemp
 
-**A smart WiFi temperature & humidity sensor for the ESP8266 (Wemos D1 mini) – with web interface, OLED display, MQTT and Home Assistant auto discovery.**
+**A smart WiFi temperature & humidity sensor for the LOLIN C3 Mini (ESP32-C3) and the Wemos D1 mini (ESP8266) – with web interface, OLED display, MQTT and Home Assistant auto discovery.**
 
 Smart-HumTemp reads a DHT sensor (or, alternatively, the OpenWeatherMap API), calculates the dew point and publishes the values to your smart home. Everything is configured in the browser – no recompiling needed to set up WiFi, MQTT or sensor calibration.
 
@@ -26,22 +26,26 @@ Smart-HumTemp reads a DHT sensor (or, alternatively, the OpenWeatherMap API), ca
 
 | Component | Description |
 |-----------|-------------|
-| Microcontroller | Wemos D1 mini (ESP8266, 4 MB flash) |
-| Sensor | DHT21 (AM2301) by default – DHT11 / DHT22 selectable in the web UI |
+| Microcontroller | LOLIN C3 Mini (ESP32-C3, 4 MB flash) **or** Wemos D1 mini (ESP8266, 4 MB flash) |
+| Sensor | DHT11 by default – DHT12 / DHT21 (AM2301) / DHT22 selectable in the web UI (build default: `-D LSC_DHT_DEFAULT_SENSOR=…` in `platformio.ini`) |
 | Display *(optional)* | 1.3" OLED, SH1106 controller, 128×64, I²C (address `0x3C`) |
 | Status LED *(optional)* | RGB LED (common cathode) |
 
 ### Wiring
 
-| D1 mini pin | GPIO | Connected to |
-|-------------|------|--------------|
-| `D4` | GPIO2  | DHT data line |
-| `D1` | GPIO5  | Display SCL |
-| `D2` | GPIO4  | Display SDA |
-| `D6` | GPIO12 | Status LED – red |
-| `D5` | GPIO14 | Status LED – green |
-| `D0` | GPIO16 | Status LED – blue |
-| `3V3` / `GND` | – | Power for sensor and display |
+Both boards have the same form factor – the connections are at the same header positions, so the same wiring (or shield) fits both.
+
+| Header position | D1 mini (ESP8266) | C3 Mini (ESP32-C3) | Connected to |
+|-----------------|-------------------|--------------------|--------------|
+| `D4` | GPIO2  | GPIO6  | DHT data line |
+| `D1` | GPIO5  | GPIO10 | Display SCL |
+| `D2` | GPIO4  | GPIO8  | Display SDA |
+| `D6` | GPIO12 | GPIO3  | Status LED – red |
+| `D5` | GPIO14 | GPIO2  | Status LED – green |
+| `D0` | GPIO16 | GPIO1  | Status LED – blue |
+| `3V3` / `GND` | – | – | Power for sensor and display |
+
+The pins are defined in [include/BoardConfig.h](include/BoardConfig.h) and can be overridden with build flags (e.g. `-D PIN_DHT_SENSOR=7`).
 
 > **Tip:** Most DHT modules already have a pull-up resistor on the data line. If you use a bare sensor, add a 10 kΩ resistor between data and 3.3 V.
 
@@ -137,14 +141,19 @@ Run this again whenever you change files in `src/web/` or the pages of the runti
 
 | Environment | Purpose |
 |-------------|---------|
-| `d1_mini_debug` | Default – debug output on the serial console (115200 baud) |
-| `d1_mini` | Release build |
+| `lolin_c3_mini_debug` | **Default** – LOLIN C3 Mini, debug output on the serial console (USB, 115200 baud) |
+| `lolin_c3_mini` | LOLIN C3 Mini – release build |
+| `d1_mini_debug` | Wemos D1 mini – debug output on the serial console (115200 baud) |
+| `d1_mini` | Wemos D1 mini – release build |
 
 ```bash
-pio run -e d1_mini                  # build
-pio run -e d1_mini -t upload        # build and flash
+pio run                             # build the default (lolin_c3_mini_debug)
+pio run -e lolin_c3_mini -t upload  # build and flash the C3 Mini release
+pio run -e d1_mini -t upload        # build and flash the D1 mini release
 pio device monitor                  # serial monitor
 ```
+
+> **C3 Mini:** the board uses its native USB port for flashing and the serial console. If the upload does not start, hold the **BOOT** (`9`) button while pressing **RST** once to enter the download mode.
 
 ### Versioning
 

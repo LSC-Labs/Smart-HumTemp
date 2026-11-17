@@ -29,13 +29,14 @@
 #include <WebRoutes.h>
 #include <DHTSensor.h>
 #include <AppStatusLed.h>
+#include <BoardConfig.h>
 // #include <Button.h>
 #include <Display.h>
 #include <DisplayPages.h>
 
 
-// Instanziate the Sensor (Location 1, DHT22 on D4)
-CDHTSensor oDHTSensor(D4,SENSOR_INDOOR); // GPIO2 , DHT22 Sensor, Location 1 
+// Instanziate the Sensor (Location 1) - pins are defined in BoardConfig.h (D1 mini: D4, C3 Mini: GPIO6)
+CDHTSensor oDHTSensor(PIN_DHT_SENSOR,SENSOR_INDOOR);
 CFS oFS;
 CWiFiController oWiFiController;
 // CMDNSController oMDNSController; // Auto registers on Message Bus
@@ -44,7 +45,7 @@ CMQTTController oMqttController;
 CWebSocket      oWebSocket("/ws");
 CWebServer      oWebServer(80);
 CAppControl     oAppControl;
-CAppStatusLed   oStatusLED(D6,D5,D0,false);
+CAppStatusLed   oStatusLED(PIN_LED_RED,PIN_LED_GREEN,PIN_LED_BLUE,false);
 // CButton         oBtn(D7,true);
 CDisplay        oDisplay;
 CNTPHandler     oNTP;

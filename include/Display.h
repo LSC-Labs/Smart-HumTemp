@@ -8,6 +8,9 @@
 #include <_DisplayHardware.h>
 #include <Adafruit_GFX.h>
 
+// Stack buffer for a flash text, that has to be measured (centered output)
+#define DISPLAY_FLASH_TEXT_SIZE  32
+
 struct DisplayConfig {
     int  RotateTime     = 8000; // Time to display a page, when RotateDisplay is on.
     bool RotateDisplays = true; // Rotate the displays, or show a static page
@@ -21,8 +24,7 @@ class CDisplay :public IConfigHandler, public IMsgEventReceiver, public DISPLAY_
 
     private:
         std::vector<IDisplayPage*> m_tPages;
-        IDisplayPage *m_pCurrentPage;
-        String m_strCurrentPageName;
+        IDisplayPage *m_pCurrentPage = nullptr;
         DisplayConfig Config;
         CSimpleDelay m_oRotateDelay;
         CSimpleDelay m_oPowerOffDelay;
@@ -61,6 +63,10 @@ class CDisplay :public IConfigHandler, public IMsgEventReceiver, public DISPLAY_
         int  printlnCentered(const char * pszText, int nStart = -1, int nEndPos = -1);
         int  printRightAligned(const char * pszText,int nEndPos = -1);
         void printAt(uint16_t nX, uint16_t nY, const char *pszText);
+        // Texts in flash (F("...")) - saves RAM on ESP8266. Max. DISPLAY_FLASH_TEXT_SIZE - 1 chars.
+        int  printCentered(const __FlashStringHelper * pszText, int nStart = -1, int nEndPos = -1);
+        int  printlnCentered(const __FlashStringHelper * pszText, int nStart = -1, int nEndPos = -1);
+        void printAt(uint16_t nX, uint16_t nY, const __FlashStringHelper *pszText);
 
     protected:
 

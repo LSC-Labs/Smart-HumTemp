@@ -9,13 +9,8 @@
 #include <Display.h>
 #include <DevelopmentHelper.h>
 
-CDisplayPage::CDisplayPage(String &strName,PageType eType, unsigned long ulRefreshTime) {
-     m_strName = strName;  
-     m_eType = eType; 
-     setRefreshTime(ulRefreshTime);
-};
 CDisplayPage::CDisplayPage(const char *pszName, PageType eType, unsigned long ulRefreshTime) { 
-    m_strName = String(pszName);
+    m_pszName = pszName ? pszName : "";
     m_eType = eType; 
     setRefreshTime(ulRefreshTime);
 };
@@ -23,9 +18,9 @@ CDisplayPage::CDisplayPage(const char *pszName, PageType eType, unsigned long ul
 
 bool CDisplayPage::hasName(const char *pszName) {
     DEBUG_FUNC_START_PARMS("%s",NULL_POINTER_STRING(pszName));
-    String strName(pszName);
-    DEBUG_FUNC_END_PARMS("%d",strName == this->m_strName);
-    return(strName == this->m_strName);
+    bool bResult = pszName && strcmp(pszName, m_pszName) == 0;
+    DEBUG_FUNC_END_PARMS("%d",bResult);
+    return(bResult);
 };
 
 void CDisplayPage::show(CDisplay * pDisplay) {

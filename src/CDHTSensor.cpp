@@ -5,7 +5,11 @@
 #include <LSCUtils.h>
 #include <DHTSensor.h>
 #include <Network.h>
-#include <ESP8266HTTPClient.h>
+#ifdef ESP32
+    #include <HTTPClient.h>
+#else
+    #include <ESP8266HTTPClient.h>
+#endif
 #include <Msgs.h>
 #include <JsonNode.h>
 
@@ -244,6 +248,22 @@ void CDHTSensor::updateFromPhysicalSensor() {
                 float fTemp = pSensor->readTemperature(false);
                 float fHumi = pSensor->readHumidity();
                 DEBUG_INFOS("Sensor (phys): %f - %f",fTemp,fHumi);
+                if(isnan(fTemp) || isnan(fHumi)) {
+                    // No valid answer of the sensor (timeout / checksum) - report the first
+                    // failure and then every 30th (every 5 minutes with 10s read interval)
+                    Status.ReadErrors++;
+                    if(Status.ReadErrors == 1 || Status.ReadErrors % 30 == 0) {
+                        ApplLogWarnWithParms(F("DHT%d on GPIO%d: no valid data (%lu failed reads in a row, %lu ok) - check wiring / sensor type"),
+                                             Config.sensorType, Config.sensorPin, Status.ReadErrors, Status.ReadOK);
+                    }
+                } else {
+                    if(Status.ReadErrors > 0) {
+                        ApplLogInfoWithParms(F("DHT%d on GPIO%d: valid data again after %lu failed reads"),
+                                             Config.sensorType, Config.sensorPin, Status.ReadErrors);
+                    }
+                    Status.ReadErrors = 0;
+                    Status.ReadOK++;
+                }
                 adjustAndStoreTemperatures(fTemp,false);
                 adjustAndStoreHumidity(fHumi);
             } catch(...) {

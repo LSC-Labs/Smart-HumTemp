@@ -27,6 +27,8 @@ struct DHTStatus {
     const char * SENSOR_STATUS_LAST_UPD_MS   = "last_upd_ms";
     const char * SENSOR_STATUS_MONITORING    = "active";
     const char * SENSOR_STATUS_LOCATION      = "loc";
+    const char * SENSOR_STATUS_READ_ERRORS   = "read_err";      // failed reads in a row (physical sensor)
+    const char * SENSOR_STATUS_READ_OK       = "read_ok";       // successful reads since start
 
     bool  MonitoringActive = false;
     float TempRawC      = NAN;
@@ -40,6 +42,8 @@ struct DHTStatus {
     int           SensorLocation = -1;
     unsigned long LastWeatherCallMillis = 0;
     unsigned long LastSensorReadMillis  = 0;
+    unsigned long ReadErrors    = 0;    // failed reads in a row (reset by a valid read)
+    unsigned long ReadOK        = 0;    // valid reads since start
 
     /**
      * ! will not write values that are set to NAN (JsonNode);
@@ -47,6 +51,10 @@ struct DHTStatus {
     void writeStatusTo(CJsonNode & oStatus, int nLevel) {
         oStatus.setValue(SENSOR_STATUS_MONITORING,  MonitoringActive);
         oStatus.setValue(SENSOR_STATUS_LOCATION,    SensorLocation);
+        if(nLevel >= STATUS_LEVEL_INFO) {
+            oStatus.setValue(SENSOR_STATUS_READ_ERRORS, ReadErrors);
+            oStatus.setValue(SENSOR_STATUS_READ_OK,     ReadOK);
+        }
         oStatus.setValue(SENSOR_STATUS_TEMPC,       TempC);
         oStatus.setValue(SENSOR_STATUS_TEMPF,       TempF);
         oStatus.setValue(SENSOR_STATUS_HUMIDITY,    Humidity);

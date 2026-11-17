@@ -25,15 +25,40 @@ const unsigned char ICON_WIFI_OFF_1[] PROGMEM  ={ // wifi icon
 
 
 
-void CDisplayBasePage::init(const char *pszName) {
-  m_oDisplayRefresh.start(5000,false);
-  Appl.MsgBus.registerEventReceiver(this,pszName);
+// Shared by all sensor pages (RAM: one copy instead of one per page)
+DisplayStatus CDisplayBasePage::Status;
+CSimpleDelay  CDisplayBasePage::m_oDisplayRefresh;
+int           CDisplayBasePage::m_nRSSI = 0;
+
+namespace {
+  /**
+   * The one and only message bus receiver of all sensor pages -
+   * forwards the messages to the shared page status.
+   */
+  class CDisplayStatusReceiver : public IMsgEventReceiver {
+    public:
+      int receiveEvent(const void * pSender, int nMsgType, const void * pMessage, int nClass) override {
+        return(CDisplayBasePage::receiveStatusEvent(pSender,nMsgType,pMessage,nClass));
+      }
+  };
+  CDisplayStatusReceiver *s_pStatusReceiver = nullptr;
+}
+
+/**
+ * Called by each page constructor - the receiver is created and registered only once.
+ */
+void CDisplayBasePage::init() {
+  if(s_pStatusReceiver == nullptr) {
+    m_oDisplayRefresh.start(5000,false);
+    s_pStatusReceiver = new CDisplayStatusReceiver();
+    Appl.MsgBus.registerEventReceiver(s_pStatusReceiver,"DisplayPages");
+  }
 };
 
 /**
  * Collect all necessary informations about the current status to display...
  */
-int CDisplayBasePage::receiveEvent(const void * pSender, int nMsgType, const void * pMessage, int nType) {
+int CDisplayBasePage::receiveStatusEvent(const void * pSender, int nMsgType, const void * pMessage, int nType) {
     switch(nMsgType) {
         case MSG_SENSOR_STATUS: 
                     if(nType == SENSOR_INDOOR)  Status.pSI = (DHTStatus *) pMessage;
@@ -115,8 +140,8 @@ int CDisplayBasePage::drawNumberFrame(CDisplay *pDisplay) {
   int16_t nOffsetX = 6;
   int16_t nOffsetY = pDisplay->getCursorY() + 2;
   pDisplay->drawLine(nMiddle,pDisplay->getCursorY(),nMiddle,pDisplay->height(),COLOR_WHITE);
-  pDisplay->printAt(nOffsetX +6 ,nOffsetY,"Indoor");
-  pDisplay->printAt(nMiddle +6 + nOffsetX,nOffsetY,"Outdoor");
+  pDisplay->printAt(nOffsetX +6 ,nOffsetY,F("Indoor"));
+  pDisplay->printAt(nMiddle +6 + nOffsetX,nOffsetY,F("Outdoor"));
   nOffsetY += 12;
   return(nOffsetY);
 }

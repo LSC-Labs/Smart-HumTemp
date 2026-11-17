@@ -12,11 +12,12 @@
 // #include <JsonHelper.h>
 #include <AppControl.h>
 
-const char * CFG_ALWAYS_ON      = "alwaysOn";
-const char * CFG_STATIC_PAGE    = "staticPage";
-const char * CFG_ROTATE         = "rotate";
-const char * CFG_POWER_OFF_TIME = "powerOff";
-const char * CFG_ROTATE_TIME    = "rotateTime";
+// Arrays instead of pointers - no extra pointer variable in RAM
+static const char CFG_ALWAYS_ON[]      = "alwaysOn";
+static const char CFG_STATIC_PAGE[]    = "staticPage";
+static const char CFG_ROTATE[]         = "rotate";
+static const char CFG_POWER_OFF_TIME[] = "powerOff";
+static const char CFG_ROTATE_TIME[]    = "rotateTime";
   
 class CDisplayCursor {
     public:
@@ -115,6 +116,31 @@ void CDisplay::printAt(uint16_t nX, uint16_t nY, const char *pszString) {
         setCursor(nX,nY);
         print(pszString);
     }
+}
+
+void CDisplay::printAt(uint16_t nX, uint16_t nY, const __FlashStringHelper *pszString) {
+    if(pszString) {
+        setCursor(nX,nY);
+        print(pszString);
+    }
+}
+
+/**
+ * Centered output of a flash text: the text is copied to the stack, because the
+ * text bounds are measured from RAM. No heap, no permanent RAM.
+ */
+int CDisplay::printCentered(const __FlashStringHelper * pszText, int nStart, int nEnd) {
+    char szText[DISPLAY_FLASH_TEXT_SIZE];
+    strncpy_P(szText,(PGM_P) pszText,sizeof(szText) - 1);
+    szText[sizeof(szText) - 1] = '\0';
+    return(printCentered(szText,nStart,nEnd));
+}
+
+int CDisplay::printlnCentered(const __FlashStringHelper * pszText, int nStart, int nEnd) {
+    char szText[DISPLAY_FLASH_TEXT_SIZE];
+    strncpy_P(szText,(PGM_P) pszText,sizeof(szText) - 1);
+    szText[sizeof(szText) - 1] = '\0';
+    return(printlnCentered(szText,nStart,nEnd));
 }
 
 uint16_t CDisplay::getTextWidthMetric(const char * pszText, int nCharWidth) {
@@ -339,7 +365,8 @@ bool CDisplay::activatePage(IDisplayPage * pPage) {
 /// @return true, if the page was found and is active.
 bool CDisplay::activatePage(const char *pszName) {
     DEBUG_FUNC_START_PARMS("%s",pszName);
-    bool bIsActivated = m_strCurrentPageName == pszName;
+    // Already active ?
+    bool bIsActivated = m_pCurrentPage != nullptr && m_pCurrentPage->hasName(pszName);
     if(!bIsActivated) {
         IDisplayPage *pNewPage = findPage(pszName);
         if(pNewPage != nullptr) {
